@@ -1,0 +1,31 @@
+# Python virtual environment
+.venv/
+env/
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Raw & generated dataset files (multi-GB data)
+data/datasets/CICIDS2017/raw/
+data/balanced/
+data/processed/
+*.csv
+*.pkl
+
+# Logs, checkpoints, and models
+logs/
+models/
+artifacts/
+*.pt
+*.pth
+*.onnx
+
+# Third party cloned repo (has its own .git repository)
+third_party/TMG-GAN/
+
+# Temporary files
+docs/extracted_paper_text.txt
+docs/page8_img_*.jpg
