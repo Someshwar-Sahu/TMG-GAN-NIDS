@@ -99,3 +99,16 @@ This document records all methodological decisions, assumptions, and deliberate 
 - **Our decision**:
   - In accordance with Hard Rule 3 ("No tuning on the test set"), the DNN classifier is trained for a **fixed 50 epochs** with batch size 256 and Adam optimizer (`lr=1e-3`), chosen a priori without test set feedback.
   - Exactly 9 models are trained: 3 methods (`original`, `smote`, `tmg_gan`) $\times$ 3 random seeds (`0`, `1`, `2`).
+
+---
+
+## 10. Evaluation Protocol & Benign False-Positive Rate (FPR)
+- **Paper status**: Table VI in Ding et al. reports Precision, Recall, F1, and Accuracy on CICIDS2017. However, the paper does NOT report the Benign False-Positive Rate (FPR), obscuring whether synthetic minority augmentation causes legitimate flows to be misclassified as attacks.
+- **Our decision**:
+  - We evaluate all 9 trained DNN models on the complete, untouched held-out test set (710,976 flows).
+  - Metrics computed:
+    - Per-class Precision, Recall, and F1 across all 6 classes.
+    - Macro-averaged Precision, Recall, F1, and Overall Accuracy across seeds 0, 1, 2 (reported as mean $\pm$ std).
+    - **Benign False-Positive Rate (FPR)**: defined as the fraction of actual Benign flows in the test set predicted as any attack class ($\frac{FP_{benign}}{N_{benign}} = 1 - \text{Recall}_{benign}$).
+  - All metrics are saved to `results/per_class.csv`, `results/summary.csv`, and compared to Table VI in `results/paper_vs_ours.csv`.
+

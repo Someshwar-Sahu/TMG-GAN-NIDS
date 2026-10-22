@@ -1,0 +1,6 @@
+Method,Source,Macro Precision,Macro Recall,Macro F1,Benign FPR
+DNN (Baseline),Paper (Table VI),0.9125,0.6501,0.69,Not Reported
+TMG-IDS,Paper (Table VI),0.9963,0.9981,0.9972,Not Reported
+DNN (Original),Ours (Mean +/- Std),0.7125 +/- 0.0201,0.9671 +/- 0.0181,0.7813 +/- 0.0117,2.4716% +/- 0.0664%
+SMOTE (Matched Targets),Ours (Mean +/- Std),0.6829 +/- 0.0077,0.9919 +/- 0.0002,0.7518 +/- 0.0102,2.6366% +/- 0.0798%
+TMG-GAN,Ours (Mean +/- Std),0.7341 +/- 0.0328,0.9523 +/- 0.0257,0.7940 +/- 0.0237,2.3088% +/- 0.2161%
