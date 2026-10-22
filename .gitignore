@@ -39,3 +39,5 @@ third_party/TMG-GAN/
 # Temporary files
 docs/extracted_paper_text.txt
 docs/page8_img_*.jpg
+docs/page9_*.png
+docs/table_vi_*.png
