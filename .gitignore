@@ -23,6 +23,7 @@ logs/*
 !logs/gpu_status.log
 !logs/preprocess.log
 !logs/gan_losses.csv
+!logs/gan_health_check.log
 models/*
 artifacts/*
 !artifacts/scaler.json
