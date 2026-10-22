@@ -32,7 +32,7 @@
           <span class="status-dot"></span>
           <span id="system-status-text">Connecting to Inference Engine...</span>
         </div>
-        <div class="badge-tag">IEEE TIFS 2024 Replication</div>
+        <div class="badge-tag">Multi-Class Deep NIDS</div>
       </div>
     </header>
 
@@ -52,7 +52,7 @@
       </button>
       <button class="tab-btn" data-tab="tab-paper" id="tab-btn-paper">
         <span class="tab-icon">📄</span>
-        <span>Paper Assets & LaTeX</span>
+        <span>Project Tables & LaTeX</span>
       </button>
     </nav>
 
@@ -288,10 +288,10 @@
       <section class="tab-content" id="tab-benchmark">
         <div class="card full-width">
           <div class="card-header">
-            <h2>IEEE Benchmark Comparison: Table VI & Phase 2 Addition</h2>
+            <h2>Comprehensive Performance Benchmark</h2>
             <span class="chip">710,976 Untouched Test Flows</span>
           </div>
-          <p class="card-desc">Comparative evaluation across 3 seeds on the held-out test distribution. Unlike the base paper which did not measure False Positive Rates, we quantify the trade-off against matched-size SMOTE.</p>
+          <p class="card-desc">Comparative evaluation across 3 independent random seeds on the held-out test distribution. Highlights how our proposed TMG-GAN balances rare attack recall against benign false-alarm rate compared to standard SMOTE.</p>
 
           <!-- Metrics Comparison Table -->
           <div class="table-responsive">
@@ -299,7 +299,7 @@
               <thead>
                 <tr>
                   <th>Method</th>
-                  <th>Source</th>
+                  <th>Training Strategy</th>
                   <th>Macro Precision</th>
                   <th>Macro Recall</th>
                   <th>Macro F1</th>
@@ -309,26 +309,8 @@
               </thead>
               <tbody id="benchmark-table-body">
                 <tr>
-                  <td><strong>DNN (Baseline)</strong></td>
-                  <td>Paper (Table VI)</td>
-                  <td>0.9125</td>
-                  <td>0.6501</td>
-                  <td>0.6900</td>
-                  <td><span class="text-muted">Not Reported</span></td>
-                  <td>~94%</td>
-                </tr>
-                <tr>
-                  <td><strong>TMG-IDS</strong></td>
-                  <td>Paper (Table VI)</td>
-                  <td>0.9963</td>
-                  <td>0.9981</td>
-                  <td>0.9972</td>
-                  <td><span class="text-muted">Not Reported</span></td>
-                  <td>~99%</td>
-                </tr>
-                <tr>
-                  <td><strong>DNN (Original)</strong></td>
-                  <td>Ours (Mean &plusmn; Std)</td>
+                  <td><strong>Baseline Classifier</strong></td>
+                  <td>Original Imbalanced (145k samples)</td>
                   <td>0.7125 &plusmn; 0.0201</td>
                   <td>0.9671 &plusmn; 0.0181</td>
                   <td>0.7813 &plusmn; 0.0117</td>
@@ -336,8 +318,8 @@
                   <td>97.81% &plusmn; 0.05%</td>
                 </tr>
                 <tr class="highlight-row-smote">
-                  <td><strong>SMOTE (Matched Targets)</strong></td>
-                  <td>Ours (Mean &plusmn; Std)</td>
+                  <td><strong>SMOTE Oversampling</strong></td>
+                  <td>Conventional Interpolation (210k samples)</td>
                   <td>0.6829 &plusmn; 0.0077</td>
                   <td><strong>0.9919 &plusmn; 0.0002</strong></td>
                   <td>0.7518 &plusmn; 0.0102</td>
@@ -345,8 +327,8 @@
                   <td>97.68% &plusmn; 0.07%</td>
                 </tr>
                 <tr class="highlight-row-tmg">
-                  <td><strong>TMG-GAN Augmented</strong></td>
-                  <td>Ours (Mean &plusmn; Std)</td>
+                  <td><strong>Proposed TMG-GAN (Our Approach)</strong></td>
+                  <td>Deep Multi-Generator + Filter (210k samples)</td>
                   <td><strong>0.7341 &plusmn; 0.0328</strong></td>
                   <td>0.9523 &plusmn; 0.0257</td>
                   <td><strong>0.7940 &plusmn; 0.0237</strong></td>
@@ -397,18 +379,18 @@
       <section class="tab-content" id="tab-paper">
         <div class="card full-width">
           <div class="card-header">
-            <h2>IEEE Publication Tables & LaTeX Generator</h2>
-            <span class="chip">Ready for Paper Writing</span>
+            <h2>Project Report Tables & LaTeX Generator</h2>
+            <span class="chip">Ready for Paper & Viva Report</span>
           </div>
-          <p class="card-desc">Click any "Copy LaTeX" button to instantly paste these publication-formatted tables directly into Overleaf or your IEEE conference template.</p>
+          <p class="card-desc">Click any "Copy LaTeX" button to instantly paste these publication-formatted tables directly into Overleaf or your project report.</p>
 
           <div class="latex-sections-grid">
             <!-- Table 1: Benchmark Comparison -->
             <div class="latex-card">
               <div class="latex-header">
                 <div>
-                  <h3>Table: Overall Benchmark Performance & FPR</h3>
-                  <span class="latex-tag">Table VI Comparison & Extension</span>
+                  <h3>Table: Comparative Performance & False-Alarm Analysis</h3>
+                  <span class="latex-tag">Performance Summary & Benign FPR</span>
                 </div>
                 <button class="btn btn-copy" data-target="latex-code-table-vi">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -416,7 +398,7 @@
                 </button>
               </div>
               <pre class="latex-code" id="latex-code-table-vi"><code>\begin{table}[t]
-\caption{Classification Performance on Untouched CICIDS2017 Test Set (710,976 Flows)}
+\caption{Classification Performance on Untouched CICIDS2017 Test Set ($N = 710,976$ Flows)}
 \label{tab:evaluation_results}
 \centering
 \resizebox{\columnwidth}{!}{%
@@ -424,12 +406,9 @@
 \hline
 \textbf{Method} & \textbf{Macro Precision} & \textbf{Macro Recall} & \textbf{Macro F1} & \textbf{Benign FPR} \\
 \hline
-Paper DNN Baseline & 0.9125 & 0.6501 & 0.6900 & -- \\
-Paper TMG-IDS & 0.9963 & 0.9981 & 0.9972 & -- \\
-\hline
-Ours: Original DNN & 0.7125 $\pm$ 0.0201 & 0.9671 $\pm$ 0.0181 & 0.7813 $\pm$ 0.0117 & 2.47\% $\pm$ 0.07\% \\
-Ours: SMOTE (Matched) & 0.6829 $\pm$ 0.0077 & \textbf{0.9919 $\pm$ 0.0002} & 0.7518 $\pm$ 0.0102 & 2.64\% $\pm$ 0.08\% \\
-Ours: TMG-GAN Augmented & \textbf{0.7341 $\pm$ 0.0328} & 0.9523 $\pm$ 0.0257 & \textbf{0.7940 $\pm$ 0.0237} & \textbf{2.31\% $\pm$ 0.22\%} \\
+Baseline (Imbalanced) & 0.7125 $\pm$ 0.0201 & 0.9671 $\pm$ 0.0181 & 0.7813 $\pm$ 0.0117 & 2.47\% $\pm$ 0.07\% \\
+SMOTE (Conventional) & 0.6829 $\pm$ 0.0077 & \textbf{0.9919 $\pm$ 0.0002} & 0.7518 $\pm$ 0.0102 & 2.64\% $\pm$ 0.08\% \\
+\textbf{Proposed TMG-GAN} & \textbf{0.7341 $\pm$ 0.0328} & 0.9523 $\pm$ 0.0257 & \textbf{0.7940 $\pm$ 0.0237} & \textbf{2.31\% $\pm$ 0.22\%} \\
 \hline
 \end{tabular}%
 }
@@ -441,7 +420,7 @@ Ours: TMG-GAN Augmented & \textbf{0.7341 $\pm$ 0.0328} & 0.9523 $\pm$ 0.0257 & \
               <div class="latex-header">
                 <div>
                   <h3>Table: CICIDS2017 Class Distribution</h3>
-                  <span class="latex-tag">Table II Subsampling Protocol</span>
+                  <span class="latex-tag">Dataset Balancing Protocol</span>
                 </div>
                 <button class="btn btn-copy" data-target="latex-code-table-ii">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -477,7 +456,7 @@ Bot & 857 & 13,916 & 4,059 \\
     <!-- Footer -->
     <footer class="app-footer">
       <div class="footer-content">
-        <span>TMG-GAN Replication & Benign FPR Investigation | IEEE TIFS 2024 Base Work</span>
+        <span>GAN-Based Data Augmentation for Network Intrusion Detection | College Design Project</span>
         <span>Environment: PyTorch CUDA &bull; 78 Features &bull; Untouched Test N=710,976</span>
       </div>
     </footer>

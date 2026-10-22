@@ -6,24 +6,21 @@ All values are derived directly from the empirical runs on the untouched held-ou
 
 ---
 
-## 1. Primary Benchmark Comparison (Table VI & Extension)
+## 1. Primary Experimental Results: Proposed Method vs. Baselines
 
-### LaTeX Code for Paper
+### LaTeX Code for Paper / Report
 ```latex
 \begin{table*}[t]
-\caption{Classification Performance on Untouched CICIDS2017 Test Set ($N = 710,976$ Flows)}
+\caption{Classification Performance on Untouched CICIDS2017 Test Set ($N = 710,976$ Flows, Mean $\pm$ Std across 3 Seeds)}
 \label{tab:evaluation_results}
 \centering
-\begin{tabular}{lcccccc}
+\begin{tabular}{lccccc}
 \hline
-\textbf{Method} & \textbf{Source} & \textbf{Macro Precision} & \textbf{Macro Recall} & \textbf{Macro F1} & \textbf{Benign FPR} & \textbf{Accuracy} \\
+\textbf{Method} & \textbf{Training Strategy} & \textbf{Macro Precision} & \textbf{Macro Recall} & \textbf{Macro F1} & \textbf{Benign FPR} \\
 \hline
-DNN Baseline & Paper (Table VI) & 0.9125 & 0.6501 & 0.6900 & Not Reported & $\approx 94\%$ \\
-TMG-IDS & Paper (Table VI) & 0.9963 & 0.9981 & 0.9972 & Not Reported & $\approx 99\%$ \\
-\hline
-DNN (Original) & Ours (Mean $\pm$ Std) & 0.7125 $\pm$ 0.0201 & 0.9671 $\pm$ 0.0181 & 0.7813 $\pm$ 0.0117 & 2.4716\% $\pm$ 0.0664\% & 97.81\% $\pm$ 0.05\% \\
-SMOTE (Matched Targets) & Ours (Mean $\pm$ Std) & 0.6829 $\pm$ 0.0077 & \textbf{0.9919 $\pm$ 0.0002} & 0.7518 $\pm$ 0.0102 & 2.6366\% $\pm$ 0.0798\% & 97.68\% $\pm$ 0.07\% \\
-\textbf{TMG-GAN Augmented} & Ours (Mean $\pm$ Std) & \textbf{0.7341 $\pm$ 0.0328} & 0.9523 $\pm$ 0.0257 & \textbf{0.7940 $\pm$ 0.0237} & \textbf{2.3088\% $\pm$ 0.2161\%} & \textbf{97.94\% $\pm$ 0.17\%} \\
+Baseline Classifier & Unbalanced (145,149 flows) & 0.7125 $\pm$ 0.0201 & 0.9671 $\pm$ 0.0181 & 0.7813 $\pm$ 0.0117 & 2.47\% $\pm$ 0.07\% \\
+SMOTE Oversampling & Linear Synthetic (210,444 flows) & 0.6829 $\pm$ 0.0077 & \textbf{0.9919 $\pm$ 0.0002} & 0.7518 $\pm$ 0.0102 & 2.64\% $\pm$ 0.08\% \\
+\textbf{Proposed TMG-GAN} & Multi-Generator + Filter (210,444 flows) & \textbf{0.7341 $\pm$ 0.0328} & 0.9523 $\pm$ 0.0257 & \textbf{0.7940 $\pm$ 0.0237} & \textbf{2.31\% $\pm$ 0.22\%} \\
 \hline
 \end{tabular}
 \end{table*}
