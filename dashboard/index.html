@@ -7,7 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300d2ff'><polyline points='22 12 18 12 15 21 9 3 6 12 2 12'/></svg>">
   <link rel="stylesheet" href="styles.css">
+
 </head>
 <body>
   <div class="app-container">
@@ -212,13 +214,13 @@
                 <span class="step-num">1</span>
                 <div>
                   <strong>Gaussian Noise Vector</strong>
-                  <p>Sample \(z \sim \mathcal{N}(0, 1)\) of size 128</p>
+                  <p>Sample z ~ N(0, 1) of size 128</p>
                 </div>
               </div>
               <div class="step-item">
                 <span class="step-num">2</span>
                 <div>
-                  <strong>Generator Network \(G_k(z)\)</strong>
+                  <strong>Generator Network G_k(z)</strong>
                   <p>Transforms noise into 78 network features</p>
                 </div>
               </div>
@@ -226,7 +228,7 @@
                 <span class="step-num">3</span>
                 <div>
                   <strong>Algorithm 2 Noise Filter</strong>
-                  <p>Tied Classifier \(C(x)\) validates class identity</p>
+                  <p>Tied Classifier C(x) validates class identity</p>
                 </div>
               </div>
             </div>
@@ -259,7 +261,7 @@
                 <span class="metric-val" id="gen-metric-conf">91.4%</span>
               </div>
               <div class="metric-card">
-                <span class="metric-title">Discriminator Score \(D(x)\)</span>
+                <span class="metric-title">Discriminator Score D(x)</span>
                 <span class="metric-val" id="gen-metric-dscore">+1.24</span>
               </div>
             </div>
@@ -269,7 +271,7 @@
               <div class="filter-status-icon">✓</div>
               <div class="filter-status-content">
                 <h4 id="filter-status-title">High-Fidelity Synthetic Flow Accepted</h4>
-                <p id="filter-status-desc">The shared feature extractor \(F(x)\) and tied classifier \(C(x)\) confirmed this generated sample cleanly lies on the legitimate Bot traffic manifold without colliding with benign space.</p>
+                <p id="filter-status-desc">The shared feature extractor F(x) and tied classifier C(x) confirmed this generated sample cleanly lies on the legitimate Bot traffic manifold without colliding with benign space.</p>
               </div>
             </div>
 
