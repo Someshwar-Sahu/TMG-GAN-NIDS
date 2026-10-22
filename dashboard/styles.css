@@ -1077,3 +1077,144 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-color-glow);
 }
+
+/* ================= COMPONENT ENHANCEMENTS ================= */
+.label-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.label-with-action label {
+  margin-bottom: 0 !important;
+}
+
+.btn-text-action {
+  background: transparent;
+  border: 1px solid rgba(0, 210, 255, 0.4);
+  border-radius: var(--radius-sm);
+  color: var(--accent-cyan);
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-text-action:hover {
+  background: rgba(0, 210, 255, 0.15);
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+/* Slider Controls */
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.slider-val {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.custom-range {
+  width: 100%;
+  accent-color: var(--accent-cyan);
+  background: var(--bg-input);
+  border-radius: 999px;
+  height: 6px;
+  cursor: pointer;
+}
+
+/* Adversarial Defense Duel Cards Grid */
+.adv-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.adv-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.adv-card:hover {
+  border-color: var(--border-color-glow);
+}
+
+.adv-card.featured-adv {
+  background: linear-gradient(180deg, #18223d 0%, #101627 100%);
+  border: 1px solid rgba(0, 210, 255, 0.5);
+  box-shadow: 0 4px 18px rgba(0, 210, 255, 0.12);
+}
+
+.adv-card-title {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.adv-card-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.adv-pred-val {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.adv-pred-conf {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.adv-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tag-evaded {
+  background: rgba(255, 71, 87, 0.15);
+  color: var(--color-danger);
+  border: 1px solid rgba(255, 71, 87, 0.35);
+}
+
+.tag-detected {
+  background: rgba(0, 242, 155, 0.15);
+  color: var(--color-success);
+  border: 1px solid rgba(0, 242, 155, 0.35);
+}
+
+.text-success {
+  color: var(--color-success) !important;
+}
+
+.text-warning {
+  color: var(--color-warning) !important;
+}

@@ -6,6 +6,7 @@ const CLASSES = ['Benign', 'DoS', 'PortScan', 'BruteForce', 'WebAttack', 'Bot'];
 let allFlows = [];
 let currentFlow = null;
 let currentGenClassIdx = 5; // Default to Bot
+let currentNoiseScale = 1.0;
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
@@ -56,6 +57,7 @@ async function initFlowSelector() {
   const classFilter = document.getElementById('flow-class-filter');
   const flowSelect = document.getElementById('flow-select');
   const btnClassify = document.getElementById('btn-run-classify');
+  const btnRandom = document.getElementById('btn-pick-random-flow');
 
   try {
     const res = await fetch('/api/flows');
@@ -81,20 +83,58 @@ async function initFlowSelector() {
       runClassification(currentFlow);
     }
   });
+
+  if (btnRandom) {
+    btnRandom.addEventListener('click', async () => {
+      btnRandom.disabled = true;
+      const originalText = btnRandom.innerHTML;
+      btnRandom.innerHTML = '<span>🎲 Rolling...</span>';
+      try {
+        const filterVal = classFilter.value === 'challenges' ? 'all' : classFilter.value;
+        const res = await fetch(`/api/random_flow?class=${encodeURIComponent(filterVal)}`);
+        const randomFlow = await res.json();
+        if (randomFlow && !randomFlow.error) {
+          // If not in allFlows, add it temporarily
+          if (!allFlows.some(f => f.id === randomFlow.id)) {
+            allFlows.unshift(randomFlow);
+            const opt = document.createElement('option');
+            opt.value = randomFlow.id;
+            opt.textContent = `🎲 [${randomFlow.class_name}] RANDOM TEST FLOW - Port ${randomFlow.summary_features['Destination Port']}`;
+            flowSelect.insertBefore(opt, flowSelect.firstChild);
+          }
+          flowSelect.value = randomFlow.id;
+          currentFlow = randomFlow;
+          renderFlowDetails(randomFlow);
+          runClassification(randomFlow);
+        }
+      } catch (e) {
+        console.error('Random sampling error:', e);
+      } finally {
+        btnRandom.innerHTML = originalText;
+        btnRandom.disabled = false;
+      }
+    });
+  }
 }
 
 function renderFlowOptions(filterClass) {
   const flowSelect = document.getElementById('flow-select');
   flowSelect.innerHTML = '';
 
-  const filtered = filterClass === 'all' 
-    ? allFlows 
-    : allFlows.filter(f => f.class_name === filterClass);
+  let filtered;
+  if (filterClass === 'all') {
+    filtered = allFlows;
+  } else if (filterClass === 'challenges') {
+    filtered = allFlows.filter(f => f.is_challenge);
+  } else {
+    filtered = allFlows.filter(f => f.class_name === filterClass);
+  }
 
   filtered.forEach(f => {
     const opt = document.createElement('option');
     opt.value = f.id;
-    opt.textContent = `[${f.class_name}] ${f.id.toUpperCase()} - Port ${f.summary_features['Destination Port']} (${f.summary_features['Total Fwd Packets']} pkts)`;
+    const prefix = f.is_challenge ? '⭐ [CHALLENGE]' : `[${f.class_name}]`;
+    opt.textContent = `${prefix} ${f.id.toUpperCase()} - Port ${f.summary_features['Destination Port']} (${f.summary_features['Total Fwd Packets']} pkts)`;
     flowSelect.appendChild(opt);
   });
 
@@ -103,6 +143,7 @@ function renderFlowOptions(filterClass) {
     renderFlowDetails(currentFlow);
   }
 }
+
 
 function renderFlowDetails(flow) {
   if (!flow) return;
@@ -234,10 +275,12 @@ function populateCard(prefix, pred) {
   }
 }
 
-/* ================= 4. TAB 2: LIVE GENERATOR ================= */
+/* ================= 4. TAB 2: ADVERSARIAL STRESS-TEST LAB ================= */
 function initGenerator() {
   const classBtns = document.querySelectorAll('.class-choice-btn');
   const btnGen = document.getElementById('btn-generate-flow');
+  const sliderNoise = document.getElementById('adv-noise-scale');
+  const noiseValLabel = document.getElementById('adv-noise-val');
 
   classBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -247,6 +290,14 @@ function initGenerator() {
       document.getElementById('gen-metric-target').textContent = `${CLASSES[currentGenClassIdx]} (Class ${currentGenClassIdx})`;
     });
   });
+
+  if (sliderNoise && noiseValLabel) {
+    sliderNoise.addEventListener('input', () => {
+      currentNoiseScale = parseFloat(sliderNoise.value);
+      const labelDesc = currentNoiseScale === 1.0 ? '(Standard)' : (currentNoiseScale > 1.0 ? '(High Perturbation)' : '(Subtle)');
+      noiseValLabel.textContent = `${currentNoiseScale.toFixed(1)}x ${labelDesc}`;
+    });
+  }
 
   btnGen.addEventListener('click', () => {
     runLiveGeneration(currentGenClassIdx);
@@ -259,14 +310,17 @@ function initGenerator() {
 async function runLiveGeneration(classIdx) {
   const btn = document.getElementById('btn-generate-flow');
   const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<span>Generating & Filtering...</span>';
+  btn.innerHTML = '<span>⚡ Synthesizing & Attacking Models...</span>';
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/generate', {
+    const res = await fetch('/api/adversarial_test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ class_index: classIdx })
+      body: JSON.stringify({ 
+        class_index: classIdx,
+        noise_scale: currentNoiseScale
+      })
     });
     const sample = await res.json();
     renderGeneratedSample(sample);
@@ -286,11 +340,21 @@ function renderGeneratedSample(sample) {
   const conf = (sample.filter_confidence * 100).toFixed(1);
   const dScore = sample.discriminator_score.toFixed(4);
   const passed = sample.filter_passed;
+  const fooled = sample.discriminator_fooled;
 
   document.getElementById('gen-metric-target').textContent = `${targetName} (Class ${sample.target_index})`;
-  document.getElementById('gen-metric-pred').textContent = predName;
-  document.getElementById('gen-metric-conf').textContent = `${conf}%`;
   document.getElementById('gen-metric-dscore').textContent = dScore >= 0 ? `+${dScore}` : dScore;
+  
+  const realismElem = document.getElementById('gen-metric-realism');
+  if (fooled) {
+    realismElem.textContent = 'Fooled (Realistic)';
+    realismElem.className = 'metric-val text-success';
+  } else {
+    realismElem.textContent = 'Detected Synthetic';
+    realismElem.className = 'metric-val text-warning';
+  }
+
+  document.getElementById('gen-metric-conf').textContent = `${conf}%`;
 
   const filterBadge = document.getElementById('gen-filter-badge');
   const validationBox = document.getElementById('filter-validation-box');
@@ -300,17 +364,75 @@ function renderGeneratedSample(sample) {
   if (passed) {
     filterBadge.textContent = 'Algorithm 2: Passed Filter';
     filterBadge.className = 'badge badge-success';
-    validationBox.style.background = 'rgba(0, 242, 155, 0.1)';
-    validationBox.style.borderColor = 'rgba(0, 242, 155, 0.35)';
-    valTitle.textContent = `High-Fidelity Synthetic ${targetName} Flow Accepted`;
-    valDesc.textContent = `The tied classifier C(x) verified this generated sample with ${conf}% confidence. It cleanly resides on the ${targetName} manifold without overlapping legitimate benign space.`;
   } else {
     filterBadge.textContent = 'Algorithm 2: Rejected (Sample Dropped)';
     filterBadge.className = 'badge badge-warning';
-    validationBox.style.background = 'rgba(255, 179, 0, 0.1)';
-    validationBox.style.borderColor = 'rgba(255, 179, 0, 0.35)';
-    valTitle.textContent = `Boundary Ambiguity: Sample Rejected`;
-    valDesc.textContent = `Classifier predicted ${predName} instead of target ${targetName}. In accordance with Algorithm 2, this sample is discarded to protect training boundary purity.`;
+  }
+
+  // Update Adversarial Verdict Headline
+  const evasion = sample.evasion_summary || {};
+  valTitle.textContent = evasion.verdict_headline || "Adversarial Attack Simulation Complete";
+  
+  if (evasion.original_evaded && evasion.tmg_gan_detected) {
+    validationBox.style.background = 'rgba(255, 179, 0, 0.12)';
+    validationBox.style.borderColor = 'rgba(255, 179, 0, 0.4)';
+    valDesc.textContent = `The synthetic ${targetName} attack successfully bypassed the unaugmented baseline (fooling it into predicting Benign). However, our proposed TMG-GAN augmented classifier recognized the stealth patterns and blocked the intrusion!`;
+  } else if (evasion.tmg_gan_detected) {
+    validationBox.style.background = 'rgba(0, 242, 155, 0.1)';
+    validationBox.style.borderColor = 'rgba(0, 242, 155, 0.35)';
+    valDesc.textContent = `High-realism ${targetName} attack synthesized (D(x) = ${dScore}). The proposed TMG-GAN model successfully neutralized the attack, demonstrating robust boundary defense.`;
+  } else {
+    validationBox.style.background = 'rgba(0, 210, 255, 0.1)';
+    validationBox.style.borderColor = 'rgba(0, 210, 255, 0.35)';
+    valDesc.textContent = `Synthetic ${targetName} sample generated and evaluated against all 3 detection models on GPU.`;
+  }
+
+  // Populate Live 3-Classifier Duel Cards
+  const downstream = sample.downstream_predictions || {};
+  
+  // 1. Original Model
+  const orig = downstream.original;
+  if (orig) {
+    document.getElementById('adv-orig-pred').textContent = orig.predicted_class;
+    document.getElementById('adv-orig-conf').textContent = `Confidence: ${(orig.confidence * 100).toFixed(1)}%`;
+    const origTag = document.getElementById('adv-orig-tag');
+    if (evasion.original_evaded) {
+      origTag.textContent = '⚠️ Evasion Succeeded (Baseline Fooled!)';
+      origTag.className = 'adv-tag tag-evaded';
+    } else {
+      origTag.textContent = '✓ Attack Caught';
+      origTag.className = 'adv-tag tag-detected';
+    }
+  }
+
+  // 2. SMOTE Model
+  const smote = downstream.smote;
+  if (smote) {
+    document.getElementById('adv-smote-pred').textContent = smote.predicted_class;
+    document.getElementById('adv-smote-conf').textContent = `Confidence: ${(smote.confidence * 100).toFixed(1)}%`;
+    const smoteTag = document.getElementById('adv-smote-tag');
+    if (evasion.smote_evaded) {
+      smoteTag.textContent = '⚠️ Evasion Succeeded';
+      smoteTag.className = 'adv-tag tag-evaded';
+    } else {
+      smoteTag.textContent = '✓ Attack Caught';
+      smoteTag.className = 'adv-tag tag-detected';
+    }
+  }
+
+  // 3. TMG-GAN Model
+  const tmg = downstream.tmg_gan;
+  if (tmg) {
+    document.getElementById('adv-tmg-pred').textContent = tmg.predicted_class;
+    document.getElementById('adv-tmg-conf').textContent = `Confidence: ${(tmg.confidence * 100).toFixed(1)}%`;
+    const tmgTag = document.getElementById('adv-tmg-tag');
+    if (evasion.tmg_gan_detected) {
+      tmgTag.textContent = '🛡️ Threat Blocked (Robust Defense)';
+      tmgTag.className = 'adv-tag tag-detected';
+    } else {
+      tmgTag.textContent = '⚠️ Evasion Detected';
+      tmgTag.className = 'adv-tag tag-evaded';
+    }
   }
 
   // Populate Generated Features Grid
@@ -330,6 +452,7 @@ function renderGeneratedSample(sample) {
     featGrid.appendChild(item);
   }
 }
+
 
 /* ================= 5. TAB 3: CONFUSION MATRIX EXPLORER ================= */
 function initConfusionExplorer() {

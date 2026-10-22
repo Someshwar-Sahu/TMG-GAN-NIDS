@@ -43,8 +43,8 @@
         <span>Live Flow Classifier</span>
       </button>
       <button class="tab-btn" data-tab="tab-generator" id="tab-btn-generator">
-        <span class="tab-icon">🧬</span>
-        <span>TMG-GAN Live Generator</span>
+        <span class="tab-icon">⚔️</span>
+        <span>Adversarial Stress-Test Lab</span>
       </button>
       <button class="tab-btn" data-tab="tab-benchmark" id="tab-btn-benchmark">
         <span class="tab-icon">📊</span>
@@ -73,7 +73,8 @@
             <div class="form-group">
               <label for="flow-class-filter">Filter by Class:</label>
               <select id="flow-class-filter" class="custom-select">
-                <option value="all">All Classes (30 Curated Flows)</option>
+                <option value="all">All Classes (35 Curated & Challenge Flows)</option>
+                <option value="challenges">⭐ Key Challenge Flows (Discrepancies & False Alarms)</option>
                 <option value="Benign">Benign (Legitimate Traffic)</option>
                 <option value="DoS">DoS (Denial of Service)</option>
                 <option value="PortScan">PortScan (Probe)</option>
@@ -84,7 +85,12 @@
             </div>
 
             <div class="form-group">
-              <label for="flow-select">Select Flow Sample:</label>
+              <div class="label-with-action">
+                <label for="flow-select">Select Flow Sample:</label>
+                <button type="button" class="btn-text-action" id="btn-pick-random-flow" title="Sample a random flow from the 300-flow test pool">
+                  <span>🎲 Pick Random Flow</span>
+                </button>
+              </div>
               <select id="flow-select" class="custom-select"></select>
             </div>
 
@@ -186,19 +192,19 @@
         </div>
       </section>
 
-      <!-- ================= TAB 2: LIVE GENERATOR ================= -->
+      <!-- ================= TAB 2: ADVERSARIAL STRESS-TEST LAB ================= -->
       <section class="tab-content" id="tab-generator">
         <div class="grid-layout">
-          <!-- Generator Control Panel -->
+          <!-- Adversarial Generator Control Panel -->
           <div class="card panel-sidebar">
             <div class="card-header">
-              <h2>Algorithm 2 Generator</h2>
-              <span class="chip">Trained Multi-Generator</span>
+              <h2>Adversarial Attack Lab</h2>
+              <span class="chip">Live Attack Simulator</span>
             </div>
-            <p class="card-desc">Select an attack class and trigger the trained generator network live to synthesize new network flow features from Gaussian noise.</p>
+            <p class="card-desc">Synthesize stealthy network attacks from random noise, test whether they fool the Discriminator into believing they are genuine traffic, and launch the attack against all three detection models.</p>
 
             <div class="form-group">
-              <label>Select Attack Class to Generate:</label>
+              <label>Select Attack Class to Synthesize:</label>
               <div class="class-btn-grid" id="gen-class-selector">
                 <button class="class-choice-btn" data-class-idx="1">DoS</button>
                 <button class="class-choice-btn" data-class-idx="2">PortScan</button>
@@ -208,75 +214,115 @@
               </div>
             </div>
 
+            <div class="form-group">
+              <div class="slider-header">
+                <label for="adv-noise-scale">Adversarial Perturbation Scale:</label>
+                <span id="adv-noise-val" class="slider-val">1.0x (Standard)</span>
+              </div>
+              <input type="range" id="adv-noise-scale" min="0.5" max="2.0" step="0.1" value="1.0" class="custom-range">
+            </div>
+
             <div class="generator-pipeline-steps">
-              <h3>Generation Pipeline:</h3>
+              <h3>Adversarial Pipeline:</h3>
               <div class="step-item">
                 <span class="step-num">1</span>
                 <div>
-                  <strong>Gaussian Noise Vector</strong>
-                  <p>Sample z ~ N(0, 1) of size 128</p>
+                  <strong>Generator Network G_k(z)</strong>
+                  <p>Synthesizes full 78-feature attack flow</p>
                 </div>
               </div>
               <div class="step-item">
                 <span class="step-num">2</span>
                 <div>
-                  <strong>Generator Network G_k(z)</strong>
-                  <p>Transforms noise into 78 network features</p>
+                  <strong>Discriminator Realism Check D(x)</strong>
+                  <p>Validates if flow fools the discriminator</p>
                 </div>
               </div>
               <div class="step-item">
                 <span class="step-num">3</span>
                 <div>
-                  <strong>Algorithm 2 Noise Filter</strong>
-                  <p>Tied Classifier C(x) validates class identity</p>
+                  <strong>Live Classifier Defense Duel</strong>
+                  <p>Attacks Original, SMOTE, and TMG-GAN models!</p>
                 </div>
               </div>
             </div>
 
             <button class="btn btn-primary" id="btn-generate-flow">
-              <span>Generate Flow Sample Live</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>🚀 Launch Adversarial Attack Simulation</span>
             </button>
           </div>
 
-          <!-- Generated Sample Inspection -->
+          <!-- Adversarial Duel & Defense Scoreboard -->
           <div class="card panel-main">
             <div class="card-header">
-              <h2>Generated Synthetic Sample Inspection</h2>
+              <h2>Adversarial Duel & Defense Scoreboard</h2>
               <div id="gen-filter-badge" class="badge badge-success">Algorithm 2: Passed Filter</div>
             </div>
 
-            <!-- Algorithm 2 Filter Score Board -->
+            <!-- Scoreboard Metrics Row -->
             <div class="filter-metrics-row">
               <div class="metric-card">
-                <span class="metric-title">Target Class</span>
+                <span class="metric-title">Target Attack</span>
                 <span class="metric-val" id="gen-metric-target">Bot (Class 5)</span>
-              </div>
-              <div class="metric-card">
-                <span class="metric-title">Classifier Filter Prediction</span>
-                <span class="metric-val" id="gen-metric-pred">Bot</span>
-              </div>
-              <div class="metric-card">
-                <span class="metric-title">Classifier Confidence</span>
-                <span class="metric-val" id="gen-metric-conf">91.4%</span>
               </div>
               <div class="metric-card">
                 <span class="metric-title">Discriminator Score D(x)</span>
                 <span class="metric-val" id="gen-metric-dscore">+1.24</span>
               </div>
-            </div>
-
-            <!-- Filter Verification Banner -->
-            <div class="filter-validation-box" id="filter-validation-box">
-              <div class="filter-status-icon">✓</div>
-              <div class="filter-status-content">
-                <h4 id="filter-status-title">High-Fidelity Synthetic Flow Accepted</h4>
-                <p id="filter-status-desc">The shared feature extractor F(x) and tied classifier C(x) confirmed this generated sample cleanly lies on the legitimate Bot traffic manifold without colliding with benign space.</p>
+              <div class="metric-card">
+                <span class="metric-title">Discriminator Realism</span>
+                <span class="metric-val text-success" id="gen-metric-realism">Fooled (Realistic)</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-title">Filter Confidence</span>
+                <span class="metric-val" id="gen-metric-conf">91.4%</span>
               </div>
             </div>
 
-            <!-- Generated Features Telemetry Grid -->
-            <h3 class="section-title">Synthesized Physical Network Features</h3>
+            <!-- Dynamic Duel Verdict Banner -->
+            <div class="filter-validation-box" id="filter-validation-box">
+              <div class="filter-status-icon" id="adv-verdict-icon">⚔️</div>
+              <div class="filter-status-content">
+                <h4 id="filter-status-title">Adversarial Defense Verdict</h4>
+                <p id="filter-status-desc">Evaluating attack robustness across models...</p>
+              </div>
+            </div>
+
+            <!-- Live 3-Classifier Defense Duel Cards -->
+            <h3 class="section-title">Live Downstream Model Defense Duel</h3>
+            <p class="chart-subtitle">Testing whether each trained model detected this synthetic attack or was evaded (fooled into predicting normal traffic):</p>
+            
+            <div class="adv-cards-grid">
+              <!-- Original Model Duel Card -->
+              <div class="adv-card" id="adv-card-orig">
+                <div class="adv-card-title">Original Model</div>
+                <div class="adv-card-sub">Unbalanced Baseline</div>
+                <div class="adv-pred-val" id="adv-orig-pred">--</div>
+                <div class="adv-pred-conf" id="adv-orig-conf">Confidence: --%</div>
+                <div class="adv-tag" id="adv-orig-tag">Evaluating...</div>
+              </div>
+
+              <!-- SMOTE Model Duel Card -->
+              <div class="adv-card" id="adv-card-smote">
+                <div class="adv-card-title">SMOTE Baseline</div>
+                <div class="adv-card-sub">Conventional Oversampling</div>
+                <div class="adv-pred-val" id="adv-smote-pred">--</div>
+                <div class="adv-pred-conf" id="adv-smote-conf">Confidence: --%</div>
+                <div class="adv-tag" id="adv-smote-tag">Evaluating...</div>
+              </div>
+
+              <!-- TMG-GAN Model Duel Card -->
+              <div class="adv-card featured-adv" id="adv-card-tmg">
+                <div class="adv-card-title">Proposed TMG-GAN</div>
+                <div class="adv-card-sub">Our Augmentation Method</div>
+                <div class="adv-pred-val" id="adv-tmg-pred">--</div>
+                <div class="adv-pred-conf" id="adv-tmg-conf">Confidence: --%</div>
+                <div class="adv-tag tag-success" id="adv-tmg-tag">Evaluating...</div>
+              </div>
+            </div>
+
+            <!-- Synthesized Features Telemetry Grid -->
+            <h3 class="section-title" style="margin-top: 22px;">Synthesized Physical Network Features</h3>
             <div class="gen-features-grid" id="gen-features-grid">
               <!-- Populated by JS -->
             </div>

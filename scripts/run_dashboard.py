@@ -42,6 +42,10 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
             self.handle_status()
         elif path == '/api/flows':
             self.handle_flows()
+        elif path == '/api/random_flow':
+            params = parse_qs(parsed.query)
+            filter_cls = params.get('class', [None])[0]
+            self.handle_random_flow(filter_cls)
         elif path == '/api/metrics':
             self.handle_metrics()
         elif path.startswith('/api/plots/'):
@@ -66,6 +70,8 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
             self.handle_classify(body)
         elif path == '/api/generate':
             self.handle_generate(body)
+        elif path == '/api/adversarial_test':
+            self.handle_adversarial_test(body)
         else:
             self.send_error(HTTPStatus.NOT_FOUND, "Endpoint not found")
 
@@ -126,6 +132,31 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
             self.send_json(sample)
         except Exception as e:
             self.send_json({'error': str(e)}, status=500)
+
+    def handle_random_flow(self, filter_class: str = None):
+        engine = get_inference_engine()
+        flow = engine.get_random_flow(filter_class=filter_class)
+        if flow is None:
+            self.send_json({'error': 'No flow found'}, status=404)
+        else:
+            self.send_json(flow)
+
+    def handle_adversarial_test(self, body: dict):
+        engine = get_inference_engine()
+        target_class_idx = body.get('class_index', 5)
+        noise_scale = body.get('noise_scale', 1.0)
+        seed = body.get('seed', None)
+
+        try:
+            report = engine.adversarial_stress_test(
+                target_class_idx=target_class_idx,
+                noise_scale=noise_scale,
+                seed=seed
+            )
+            self.send_json(report)
+        except Exception as e:
+            self.send_json({'error': str(e)}, status=500)
+
 
     def handle_metrics(self):
         summary_csv = RESULTS_DIR / 'summary.csv'

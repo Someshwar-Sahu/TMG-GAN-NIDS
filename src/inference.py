@@ -209,6 +209,112 @@ class InferenceEngine:
         with open(flows_path, 'r') as f:
             return json.load(f)
 
+    def get_random_flow(self, filter_class: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Randomly samples a test flow from the 300-sample test pool."""
+        pool_path = SAMPLES_DIR / 'random_pool.json'
+        if not pool_path.exists():
+            flows = self.get_preloaded_flows()
+        else:
+            with open(pool_path, 'r') as f:
+                flows = json.load(f)
+
+        if not flows:
+            return None
+
+        if filter_class and filter_class != 'all':
+            filtered = [f for f in flows if f.get('class_name') == filter_class]
+            if filtered:
+                flows = filtered
+
+        import random
+        return random.choice(flows)
+
+    def adversarial_stress_test(
+        self,
+        target_class_idx: int,
+        noise_scale: float = 1.0,
+        seed: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Adversarial Stress-Test:
+        1. Generates synthetic attack using Generator G_k(z) with customizable noise perturbation.
+        2. Tests whether sample fools the Discriminator D(x) (WGAN realism score).
+        3. Tests whether sample passes Algorithm 2 filter C(x).
+        4. Launches live attack against all 3 downstream classifiers (Original, SMOTE, TMG-GAN)
+           to determine which models were fooled (evaded) vs which successfully detected the attack.
+        """
+        if not self.generators or self.cd_model is None:
+            raise RuntimeError("TMG-GAN generator/CD models not loaded.")
+
+        if not (0 <= target_class_idx < len(self.generators)):
+            raise ValueError(f"Invalid target class index {target_class_idx}")
+
+        if seed is not None:
+            torch.manual_seed(seed)
+
+        generator = self.generators[target_class_idx]
+        # Sample Gaussian noise, optionally perturbed by noise_scale
+        z = torch.randn(1, 128, device=self.device) * float(noise_scale)
+
+        with torch.no_grad():
+            gen_scaled = generator(z)
+            d_score, c_logits = self.cd_model(gen_scaled)
+            c_probs = torch.softmax(c_logits, dim=1).cpu().numpy()[0]
+            pred_idx = int(np.argmax(c_probs))
+
+        scaled_np = gen_scaled.cpu().numpy()[0]
+        raw_dict = self.unscale_features(scaled_np)
+        accepted = bool(pred_idx == target_class_idx)
+        d_val = float(d_score.cpu().item())
+
+        # Test against all 3 downstream detection models
+        downstream = {}
+        for m_name in ['original', 'smote', 'tmg_gan']:
+            if m_name in self.classifiers:
+                downstream[m_name] = self.predict_single(scaled_np, model_name=m_name, is_scaled=True)
+
+        target_name = CLASSES[target_class_idx]
+        orig_pred = downstream.get('original', {}).get('predicted_class')
+        smote_pred = downstream.get('smote', {}).get('predicted_class')
+        tmg_pred = downstream.get('tmg_gan', {}).get('predicted_class')
+
+        # Did it fool downstream models into thinking it is harmless benign traffic?
+        orig_evaded = (orig_pred == 'Benign')
+        smote_evaded = (smote_pred == 'Benign')
+        tmg_detected = (tmg_pred == target_name or (tmg_pred != 'Benign'))
+
+        if orig_evaded and tmg_detected:
+            verdict = "Evasion Successful against Baseline! Proposed TMG-GAN Successfully Blocked Threat."
+            verdict_type = "success_defense"
+        elif not orig_evaded and tmg_detected:
+            verdict = "Robust Multi-Model Detection: All Augmented Models Blocked the Threat."
+            verdict_type = "consensus_defense"
+        else:
+            verdict = f"Attack Classified: TMG-GAN predicted {tmg_pred} ({downstream.get('tmg_gan', {}).get('confidence', 0)*100:.1f}%)."
+            verdict_type = "detected"
+
+        return {
+            'target_class': target_name,
+            'target_index': target_class_idx,
+            'noise_scale': noise_scale,
+            'discriminator_score': d_val,
+            'discriminator_fooled': bool(d_val >= 0.0),
+            'filter_passed': accepted,
+            'filter_predicted_class': CLASSES[pred_idx],
+            'filter_confidence': float(c_probs[pred_idx]),
+            'downstream_predictions': downstream,
+            'evasion_summary': {
+                'original_evaded': orig_evaded,
+                'smote_evaded': smote_evaded,
+                'tmg_gan_detected': tmg_detected,
+                'verdict_headline': verdict,
+                'verdict_type': verdict_type
+            },
+            'scaled_features': [float(v) for v in scaled_np],
+            'raw_features': raw_dict
+        }
+
+
 
 _engine_instance: Optional[InferenceEngine] = None
 
