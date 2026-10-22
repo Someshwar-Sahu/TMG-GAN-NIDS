@@ -15,10 +15,16 @@ data/processed/
 *.csv
 *.pkl
 
+# IDE
+.vscode/
+
 # Logs, checkpoints, and models
-logs/
-models/
-artifacts/
+logs/*
+!logs/gpu_status.log
+!logs/preprocess.log
+models/*
+artifacts/*
+!artifacts/scaler.json
 *.pt
 *.pth
 *.onnx
