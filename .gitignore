@@ -13,6 +13,8 @@ data/datasets/CICIDS2017/raw/
 data/balanced/
 data/processed/
 *.csv
+!data/plots/*.csv
+!results/*.csv
 *.pkl
 
 # IDE
