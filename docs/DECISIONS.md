@@ -75,5 +75,27 @@ This document records all methodological decisions, assumptions, and deliberate 
 ## 7. Single GAN Training Run
 - **Paper status**: The paper does not report standard deviations over multiple GAN training runs due to high compute cost.
 - **Our decision**:
-  - The TMG-GAN model will be trained once (seed 0).
-  - Downstream DNN classifiers and SMOTE baselines will be trained and evaluated across seeds 0, 1, and 2 to quantify classification variance.
+  - The TMG-GAN model is trained once with fixed seed 0.
+  - Downstream DNN classifiers and SMOTE baselines are trained and evaluated across seeds 0, 1, and 2 to quantify classification variance. This limitation is explicitly recorded.
+
+---
+
+## 8. Matched SMOTE Target Sample Sizes
+- **Paper status**: The paper compares against other methods but does not provide a matched-size SMOTE baseline.
+- **Our decision**:
+  - To isolate the generative advantage of TMG-GAN from simple dataset expansion, SMOTE oversampling is configured with target class sizes identical to Table II:
+    - Benign: 105,222
+    - DoS: 34,609
+    - Port Scan: 23,868
+    - Brute Force: 18,294
+    - Web Attack: 14,535
+    - Bot: 13,916
+  - This produces exactly 210,444 samples in both SMOTE and TMG-GAN training sets, allowing a completely fair comparison.
+
+---
+
+## 9. Classifier Training Protocol & Epochs
+- **Paper status**: The paper uses DNN as the downstream classifier but does not detail early stopping or hyperparameter search on the test set.
+- **Our decision**:
+  - In accordance with Hard Rule 3 ("No tuning on the test set"), the DNN classifier is trained for a **fixed 50 epochs** with batch size 256 and Adam optimizer (`lr=1e-3`), chosen a priori without test set feedback.
+  - Exactly 9 models are trained: 3 methods (`original`, `smote`, `tmg_gan`) $\times$ 3 random seeds (`0`, `1`, `2`).
