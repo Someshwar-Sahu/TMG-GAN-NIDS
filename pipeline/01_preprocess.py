@@ -9,8 +9,7 @@ from sklearn.model_selection import train_test_split
 PROJECT_ROOT = Path(__file__).absolute().parent.parent
 DATA_DIR = PROJECT_ROOT / 'data' / 'datasets' / 'CICIDS2017'
 RAW_DIR = DATA_DIR / 'raw'
-ARTIFACTS_DIR = PROJECT_ROOT / 'artifacts'
-LOGS_DIR = PROJECT_ROOT / 'logs'
+MODEL_DIR = PROJECT_ROOT / 'models'
 
 CLASSES = ['Benign', 'DoS', 'PortScan', 'BruteForce', 'WebAttack', 'Bot']
 CLASS_TO_ID = {c: i for i, c in enumerate(CLASSES)}
@@ -200,7 +199,7 @@ def main() -> None:
     assert x_tr_scaled.shape[1] == 78, f'Expected 78 features in x_train, got {x_tr_scaled.shape[1]}'
     assert x_te_scaled.shape[1] == 78, f'Expected 78 features in x_test, got {x_te_scaled.shape[1]}'
 
-    # Save Scaler to artifacts/scaler.json
+    # Save Scaler to models/scaler.json
     scaler_payload = {
         'feature_names': x_tr.columns.tolist(),
         'feature_count': len(x_tr.columns),
@@ -212,9 +211,10 @@ def main() -> None:
         'class_to_id': CLASS_TO_ID,
         'train_counts': TABLE_II_TRAIN_COUNTS,
     }
-    with open(ARTIFACTS_DIR / 'scaler.json', 'w', encoding='utf-8') as f:
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    with open(MODEL_DIR / 'scaler.json', 'w', encoding='utf-8') as f:
         json.dump(scaler_payload, f, indent=2)
-    print(f'\nSaved scaler parameters to: {ARTIFACTS_DIR / "scaler.json"}')
+    print(f'\nSaved scaler parameters to: {MODEL_DIR / "scaler.json"}')
 
     # One-hot encode labels
     def onehot(labels_series: pd.Series) -> pd.DataFrame:

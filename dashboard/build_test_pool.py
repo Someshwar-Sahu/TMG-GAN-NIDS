@@ -21,7 +21,6 @@ from src.dnn import DNNClassifier
 
 DATA_DIR = ROOT / 'data' / 'datasets' / 'CICIDS2017'
 SAMPLE_DIR = ROOT / 'data' / 'samples'
-ARTIFACT_DIR = ROOT / 'artifacts'
 MODEL_DIR = ROOT / 'models'
 SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -53,8 +52,8 @@ def load_models():
 
 
 def main():
-    print("Loading scaler from artifacts/scaler.json...")
-    with open(ARTIFACT_DIR / 'scaler.json', 'r') as f:
+    print("Loading scaler from models/scaler.json...")
+    with open(MODEL_DIR / 'scaler.json', 'r') as f:
         scaler = json.load(f)
 
     feature_names = scaler['feature_names']

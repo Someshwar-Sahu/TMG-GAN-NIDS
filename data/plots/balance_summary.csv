@@ -1,0 +1,7 @@
+class,before,after,synthetic_added,synthetic_share
+Benign,140000,140000,0,0.0
+DoS,135611,135611,0,0.0
+PortScan,63486,63486,0,0.0
+BruteForce,6405,15000,8595,0.573
+WebAttack,1500,15000,13500,0.9
+Bot,1363,15000,13637,0.9091333333333333

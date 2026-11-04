@@ -22,7 +22,6 @@ from src.dnn import DNNClassifier
 from src.models import CDModel, GeneratorModel
 
 MODEL_DIR = ROOT / 'models'
-ARTIFACT_DIR = ROOT / 'artifacts'
 RESULTS_DIR = ROOT / 'results'
 SAMPLES_DIR = ROOT / 'data' / 'samples'
 
@@ -40,7 +39,7 @@ class InferenceEngine:
             self.device = torch.device(device)
 
         # 1. Load Scaler
-        scaler_path = ARTIFACT_DIR / 'scaler.json'
+        scaler_path = MODEL_DIR / 'scaler.json'
         if not scaler_path.exists():
             raise FileNotFoundError(f"Scaler missing at {scaler_path}")
         with open(scaler_path, 'r') as f:

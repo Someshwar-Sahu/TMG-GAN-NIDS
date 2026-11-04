@@ -19,12 +19,12 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-ROOT = Path(__file__).absolute().parent.parent
+DASHBOARD_DIR = Path(__file__).absolute().parent
+ROOT = DASHBOARD_DIR.parent
 sys.path.append(str(ROOT))
 
 from src.inference import get_inference_engine, CLASSES
 
-DASHBOARD_DIR = ROOT / 'dashboard'
 RESULTS_DIR = ROOT / 'results'
 PLOTS_DIR = ROOT / 'data' / 'plots'
 

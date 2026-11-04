@@ -1,7 +1,0 @@
-PyTorch Version: 2.6.0+cu124
-CUDA Available: True
-Device Count: 1
-Current Device: 0
-Device Name: NVIDIA GeForce RTX 3050 Laptop GPU
-Device Capability: (8, 6)
-Total Memory (GB): 4.0

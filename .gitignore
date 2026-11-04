@@ -20,24 +20,13 @@ data/processed/
 # IDE
 .vscode/
 
-# Logs, checkpoints, and models
-logs/*
-!logs/gpu_status.log
-!logs/preprocess.log
-!logs/gan_losses.csv
-!logs/gan_health_check.log
+# Models and checkpoints
 models/*
-artifacts/*
-!artifacts/scaler.json
+!models/scaler.json
 *.pt
 *.pth
 *.onnx
 
-# Third party cloned repo (has its own .git repository)
-third_party/TMG-GAN/
-
-# Temporary files
-docs/extracted_paper_text.txt
-docs/page8_img_*.jpg
-docs/page9_*.png
-docs/table_vi_*.png
+# Temporary archives and logs
+*.zip
+*.log
