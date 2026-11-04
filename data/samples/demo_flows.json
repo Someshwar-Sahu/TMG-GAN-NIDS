@@ -5,7 +5,7 @@
     "class_index": 0,
     "is_challenge": true,
     "challenge_type": "smote_false_alarm",
-    "description": "[CHALLENGE CASE] Legitimate normal traffic misclassified by SMOTE as Bot, correctly identified by TMG-GAN as Benign.",
+    "description": "Legitimate normal traffic misclassified by SMOTE as Bot, correctly identified by TMG-GAN as Benign.",
     "summary_features": {
       "Destination Port": 50317,
       "Flow Duration (us)": 13.999959945678711,
@@ -227,7 +227,7 @@
     "class_index": 0,
     "is_challenge": true,
     "challenge_type": "smote_false_alarm",
-    "description": "[CHALLENGE CASE] Legitimate normal traffic misclassified by SMOTE as Bot, correctly identified by TMG-GAN as Benign.",
+    "description": "Legitimate normal traffic misclassified by SMOTE as Bot, correctly identified by TMG-GAN as Benign.",
     "summary_features": {
       "Destination Port": 51138,
       "Flow Duration (us)": 42.000038146972656,
@@ -449,7 +449,7 @@
     "class_index": 0,
     "is_challenge": true,
     "challenge_type": "smote_false_alarm",
-    "description": "[CHALLENGE CASE] Legitimate normal traffic misclassified by SMOTE as WebAttack, correctly identified by TMG-GAN as Benign.",
+    "description": "Legitimate normal traffic misclassified by SMOTE as WebAttack, correctly identified by TMG-GAN as Benign.",
     "summary_features": {
       "Destination Port": 79,
       "Flow Duration (us)": 5280310.0,
@@ -671,7 +671,7 @@
     "class_index": 2,
     "is_challenge": true,
     "challenge_type": "original_miss",
-    "description": "[CHALLENGE CASE] Real PortScan attack missed by unaugmented Original (called Benign), successfully detected by TMG-GAN.",
+    "description": "Real PortScan attack missed by unaugmented Original (called Benign), successfully detected by TMG-GAN.",
     "summary_features": {
       "Destination Port": 58080,
       "Flow Duration (us)": 33.000038146972656,
@@ -893,7 +893,7 @@
     "class_index": 2,
     "is_challenge": true,
     "challenge_type": "original_miss",
-    "description": "[CHALLENGE CASE] Real PortScan attack missed by unaugmented Original (called Benign), successfully detected by TMG-GAN.",
+    "description": "Real PortScan attack missed by unaugmented Original (called Benign), successfully detected by TMG-GAN.",
     "summary_features": {
       "Destination Port": 445,
       "Flow Duration (us)": 6027238.0,

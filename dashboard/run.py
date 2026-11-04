@@ -34,6 +34,12 @@ PORT = 8050
 class DashboardAPIHandler(SimpleHTTPRequestHandler):
     """Handles both REST API calls and static file delivery."""
 
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+        super().end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -70,7 +76,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
             self.handle_classify(body)
         elif path == '/api/generate':
             self.handle_generate(body)
-        elif path == '/api/adversarial_test':
+        elif path in ('/api/synthetic_test', '/api/adversarial_test'):
             self.handle_adversarial_test(body)
         else:
             self.send_error(HTTPStatus.NOT_FOUND, "Endpoint not found")
@@ -196,7 +202,6 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', mime_type)
         self.send_header('Content-Length', str(len(data)))
-        self.send_header('Cache-Control', 'max-age=3600')
         self.end_headers()
         self.wfile.write(data)
 

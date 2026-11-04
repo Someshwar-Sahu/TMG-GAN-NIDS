@@ -3,92 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TMG-GAN Defense Studio | Network Intrusion Detection</title>
+  <title>TMG-GAN Evaluation Console | Network Intrusion Detection</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300d2ff'><polyline points='22 12 18 12 15 21 9 3 6 12 2 12'/></svg>">
-  <link rel="stylesheet" href="styles.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2.1">
 </head>
 <body>
   <div class="app-container">
-    <!-- Top Navigation Header -->
+    <!-- Top Academic Header -->
     <header class="app-header">
       <div class="header-left">
-        <div class="logo-badge">
-          <svg class="pulse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-        </div>
+        <div class="header-mark">TG</div>
         <div class="header-titles">
-          <h1>TMG-GAN <span class="highlight">Defense Studio</span></h1>
-          <p class="subtitle">Generative Adversarial Network Data Augmentation for Network Intrusion Detection</p>
+          <h1>TMG-GAN Evaluation Console <span class="title-badge">Research Console</span></h1>
+          <p class="subtitle">Multi-Generator Generative Adversarial Network for Imbalanced Network Intrusion Detection (CICIDS2017)</p>
         </div>
       </div>
       
       <div class="header-right">
-        <div class="status-pill" id="system-status-pill">
+        <div class="meta-pill" id="system-status-pill">
           <span class="status-dot"></span>
           <span id="system-status-text">Connecting to Inference Engine...</span>
         </div>
-        <div class="badge-tag">Multi-Class Deep NIDS</div>
+        <div class="meta-pill">Held-out Test N = 710,976</div>
       </div>
     </header>
 
     <!-- Navigation Tabs -->
     <nav class="nav-tabs" role="tablist">
       <button class="tab-btn active" data-tab="tab-classifier" id="tab-btn-classifier">
-        <span class="tab-icon">⚡</span>
-        <span>Live Flow Classifier</span>
+        <span class="tab-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </span>
+        <span>Flow Classifier & Inspection</span>
       </button>
       <button class="tab-btn" data-tab="tab-generator" id="tab-btn-generator">
-        <span class="tab-icon">⚔️</span>
-        <span>Adversarial Stress-Test Lab</span>
+        <span class="tab-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </span>
+        <span>Synthetic Sample Generation (Algorithm 2)</span>
       </button>
       <button class="tab-btn" data-tab="tab-benchmark" id="tab-btn-benchmark">
-        <span class="tab-icon">📊</span>
-        <span>Benchmark & FPR Analysis</span>
-      </button>
-      <button class="tab-btn" data-tab="tab-paper" id="tab-btn-paper">
-        <span class="tab-icon">📄</span>
-        <span>Project Tables & LaTeX</span>
+        <span class="tab-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </span>
+        <span>Empirical Benchmark & Evaluation</span>
       </button>
     </nav>
 
     <!-- Main Content Area -->
     <main class="main-content">
 
-      <!-- ================= TAB 1: LIVE CLASSIFIER ================= -->
+      <!-- ================= TAB 1: FLOW CLASSIFIER ================= -->
       <section class="tab-content active" id="tab-classifier">
         <div class="grid-layout">
           <!-- Left Column: Flow Inspector & Selector -->
           <div class="card panel-sidebar">
             <div class="card-header">
-              <h2>Select Network Test Flow</h2>
-              <span class="chip">Untouched Test Set</span>
+              <h2>Select Test Flow Sample</h2>
+              <span class="chip">Held-out Test Partition</span>
             </div>
-            <p class="card-desc">Select a representative flow from the 710,976 held-out test records to evaluate across all three models simultaneously.</p>
+            <p class="card-desc">Inspect representative traffic records from the 710,976 held-out test flows and evaluate predictions across all three trained models.</p>
 
             <div class="form-group">
-              <label for="flow-class-filter">Filter by Class:</label>
+              <label for="flow-class-filter">Filter by Traffic Class:</label>
               <select id="flow-class-filter" class="custom-select">
-                <option value="all">All Classes (35 Curated & Challenge Flows)</option>
-                <option value="challenges">⭐ Key Challenge Flows (Discrepancies & False Alarms)</option>
-                <option value="Benign">Benign (Legitimate Traffic)</option>
+                <option value="all">All Available Samples (Curated Test Records)</option>
+                <option value="challenges">Key Discrepancy Samples (SMOTE False Alarms)</option>
+                <option value="Benign">Benign (Normal Traffic)</option>
                 <option value="DoS">DoS (Denial of Service)</option>
-                <option value="PortScan">PortScan (Probe)</option>
-                <option value="BruteForce">BruteForce (Patator)</option>
+                <option value="PortScan">PortScan (Network Probe)</option>
+                <option value="BruteForce">BruteForce (Patator Authentication)</option>
                 <option value="WebAttack">WebAttack (XSS / SQLi)</option>
-                <option value="Bot">Bot (Malware C2 Beacon)</option>
+                <option value="Bot">Bot (Malware Command & Control)</option>
               </select>
             </div>
 
             <div class="form-group">
               <div class="label-with-action">
-                <label for="flow-select">Select Flow Sample:</label>
-                <button type="button" class="btn-text-action" id="btn-pick-random-flow" title="Sample a random flow from the 300-flow test pool">
-                  <span>🎲 Pick Random Flow</span>
+                <label for="flow-select">Select Flow Record:</label>
+                <button type="button" class="btn-text-action" id="btn-pick-random-flow" title="Sample a random flow from the test pool">
+                  <span>Sample Random Flow</span>
                 </button>
               </div>
               <select id="flow-select" class="custom-select"></select>
@@ -106,31 +102,33 @@
             </div>
 
             <div class="features-preview-box">
-              <h3>Key Flow Telemetry</h3>
+              <h3>Observed Network Telemetry</h3>
               <div class="telemetry-grid" id="telemetry-grid">
                 <!-- Injected via JavaScript -->
               </div>
             </div>
 
             <button class="btn btn-primary" id="btn-run-classify">
-              <span>Run Multi-Model Prediction</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              <span>Run Multi-Model Classification</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
 
           <!-- Right Column: Side-by-Side Model Comparison -->
           <div class="card panel-main">
             <div class="card-header">
-              <h2>Side-by-Side Model Verdict</h2>
-              <div id="verdict-status-badge" class="verdict-badge">Ready to Classify</div>
+              <h2>Multi-Model Classification Analysis</h2>
+              <div id="verdict-status-badge" class="verdict-badge">Ready to Evaluate</div>
             </div>
 
-            <!-- Insight Banner (e.g. SMOTE False Positive Alert) -->
+            <!-- Insight Box (Discrepancy Analysis) -->
             <div id="insight-banner" class="insight-banner hidden">
-              <div class="insight-icon">⚠️</div>
+              <div class="insight-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
               <div class="insight-body">
-                <h4 id="insight-title">Benign False Positive Detected in SMOTE</h4>
-                <p id="insight-desc">SMOTE overfitted synthetic minority boundaries into normal traffic, triggering a false alarm. TMG-GAN correctly identified this legitimate network flow as Benign.</p>
+                <h4 id="insight-title">SMOTE False Positive Identified on Benign Traffic</h4>
+                <p id="insight-desc">SMOTE overfitted synthetic minority boundaries into normal traffic space, incorrectly raising a false alarm. TMG-GAN preserved legitimate decision boundaries and classified this flow as Benign.</p>
               </div>
             </div>
 
@@ -140,7 +138,7 @@
               <div class="model-card" id="card-original">
                 <div class="model-card-header">
                   <div class="model-title">Original Model</div>
-                  <div class="model-subtitle">Unbalanced (145k samples)</div>
+                  <div class="model-subtitle">Imbalanced Baseline (145k flows)</div>
                 </div>
                 <div class="prediction-box">
                   <div class="pred-label" id="orig-pred-class">--</div>
@@ -154,7 +152,7 @@
               <div class="model-card" id="card-smote">
                 <div class="model-card-header">
                   <div class="model-title">SMOTE Baseline</div>
-                  <div class="model-subtitle">Matched Targets (210k samples)</div>
+                  <div class="model-subtitle">Linear Interpolation (210k flows)</div>
                 </div>
                 <div class="prediction-box">
                   <div class="pred-label" id="smote-pred-class">--</div>
@@ -166,10 +164,9 @@
 
               <!-- TMG-GAN Model -->
               <div class="model-card featured" id="card-tmg-gan">
-                <div class="featured-badge">Our Method</div>
                 <div class="model-card-header">
                   <div class="model-title">TMG-GAN Augmented</div>
-                  <div class="model-subtitle">Algorithm 2 Filtered (210k samples)</div>
+                  <div class="model-subtitle">Algorithm 2 Filtered (210k flows)</div>
                 </div>
                 <div class="prediction-box">
                   <div class="pred-label" id="tmg-pred-class">--</div>
@@ -180,31 +177,27 @@
               </div>
             </div>
 
-            <!-- Viva Key Takeaway Callout -->
-            <div class="viva-takeaway-box">
-              <div class="takeaway-header">
-                <span class="icon">💡</span>
-                <strong>Viva Defense Insight:</strong>
-              </div>
-              <p>In high-throughput enterprise networks (10Gbps+), a 0.33% difference in Benign FPR translates into <strong>thousands of false alarms per hour</strong> for network administrators. TMG-GAN suppresses benign false alarms while maintaining robust detection on stealthy minority attacks.</p>
+            <div class="info-note-box">
+              <span class="info-note-icon">&bull;</span>
+              <p>Model confidence represents calibrated multi-class probabilities across 6 network traffic classes (Benign, DoS, PortScan, BruteForce, WebAttack, Bot). The proposed TMG-GAN classifier reduces Benign false positive rate to 2.31% on the untouched test partition.</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ================= TAB 2: ADVERSARIAL STRESS-TEST LAB ================= -->
+      <!-- ================= TAB 2: SYNTHETIC SAMPLE GENERATION ================= -->
       <section class="tab-content" id="tab-generator">
         <div class="grid-layout">
-          <!-- Adversarial Generator Control Panel -->
+          <!-- Generator Control Panel -->
           <div class="card panel-sidebar">
             <div class="card-header">
-              <h2>Adversarial Attack Lab</h2>
-              <span class="chip">Live Attack Simulator</span>
+              <h2>Sample Synthesis Controls</h2>
+              <span class="chip">Algorithm 2 Engine</span>
             </div>
-            <p class="card-desc">Synthesize stealthy network attacks from random noise, test whether they fool the Discriminator into believing they are genuine traffic, and launch the attack against all three detection models.</p>
+            <p class="card-desc">Sample latent noise vector <code>z &sim; N(0, &sigma;&sup2;I)</code>, synthesize candidate flow via Generator <code>G<sub>k</sub>(z)</code>, and validate acceptance via tied classifier filter <code>C(x) = k</code>.</p>
 
             <div class="form-group">
-              <label>Select Attack Class to Synthesize:</label>
+              <label>Target Attack Class to Synthesize:</label>
               <div class="class-btn-grid" id="gen-class-selector">
                 <button class="class-choice-btn" data-class-idx="1">DoS</button>
                 <button class="class-choice-btn" data-class-idx="2">PortScan</button>
@@ -216,93 +209,89 @@
 
             <div class="form-group">
               <div class="slider-header">
-                <label for="adv-noise-scale">Adversarial Perturbation Scale:</label>
-                <span id="adv-noise-val" class="slider-val">1.0x (Standard)</span>
+                <label for="adv-noise-scale">Latent Noise Scale (&sigma;):</label>
+                <span id="adv-noise-val" class="slider-val">1.0 &times; (Standard Normal)</span>
               </div>
-              <input type="range" id="adv-noise-scale" min="0.5" max="2.0" step="0.1" value="1.0" class="custom-range">
+              <input type="range" id="adv-noise-scale" min="0.5" max="1.5" step="0.1" value="1.0" class="custom-range">
             </div>
 
-            <div class="generator-pipeline-steps">
-              <h3>Adversarial Pipeline:</h3>
-              <div class="step-item">
-                <span class="step-num">1</span>
-                <div>
-                  <strong>Generator Network G_k(z)</strong>
-                  <p>Synthesizes full 78-feature attack flow</p>
+            <div class="pipeline-spec-box">
+              <h3>Algorithm 2 Gate Specifications</h3>
+              <div class="spec-list">
+                <div class="spec-item">
+                  <span class="spec-label">Generator Network:</span>
+                  <span class="spec-val">G<sub>k</sub>(z) &rarr; 78-dim flow</span>
                 </div>
-              </div>
-              <div class="step-item">
-                <span class="step-num">2</span>
-                <div>
-                  <strong>Discriminator Realism Check D(x)</strong>
-                  <p>Validates if flow fools the discriminator</p>
+                <div class="spec-item">
+                  <span class="spec-label">Wasserstein Critic:</span>
+                  <span class="spec-val">Critic Score D(x)</span>
                 </div>
-              </div>
-              <div class="step-item">
-                <span class="step-num">3</span>
-                <div>
-                  <strong>Live Classifier Defense Duel</strong>
-                  <p>Attacks Original, SMOTE, and TMG-GAN models!</p>
+                <div class="spec-item">
+                  <span class="spec-label">Boundary Acceptance:</span>
+                  <span class="spec-val">C(x) = k (Argmax)</span>
                 </div>
               </div>
             </div>
 
             <button class="btn btn-primary" id="btn-generate-flow">
-              <span>🚀 Launch Adversarial Attack Simulation</span>
+              <span>Synthesize Sample (Algorithm 2)</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
 
-          <!-- Adversarial Duel & Defense Scoreboard -->
+          <!-- Algorithm 2 Scoreboard & Model Comparison -->
           <div class="card panel-main">
             <div class="card-header">
-              <h2>Adversarial Duel & Defense Scoreboard</h2>
+              <h2>Algorithm 2 Validation & Model Evaluation</h2>
               <div id="gen-filter-badge" class="badge badge-success">Algorithm 2: Passed Filter</div>
             </div>
 
             <!-- Scoreboard Metrics Row -->
             <div class="filter-metrics-row">
               <div class="metric-card">
-                <span class="metric-title">Target Attack</span>
+                <span class="metric-title">Target Class</span>
                 <span class="metric-val" id="gen-metric-target">Bot (Class 5)</span>
               </div>
               <div class="metric-card">
-                <span class="metric-title">Discriminator Score D(x)</span>
+                <span class="metric-title">Critic Score D(x)</span>
                 <span class="metric-val" id="gen-metric-dscore">+1.24</span>
               </div>
               <div class="metric-card">
-                <span class="metric-title">Discriminator Realism</span>
-                <span class="metric-val text-success" id="gen-metric-realism">Fooled (Realistic)</span>
+                <span class="metric-title">Distribution Realism</span>
+                <span class="metric-val text-success" id="gen-metric-realism">Converged</span>
               </div>
               <div class="metric-card">
                 <span class="metric-title">Filter Confidence</span>
-                <span class="metric-val" id="gen-metric-conf">91.4%</span>
+                <span class="metric-val" id="gen-metric-conf">94.2%</span>
               </div>
             </div>
 
-            <!-- Dynamic Duel Verdict Banner -->
+            <!-- Validation Status Banner -->
             <div class="filter-validation-box" id="filter-validation-box">
-              <div class="filter-status-icon" id="adv-verdict-icon">⚔️</div>
+              <div class="filter-status-icon" id="adv-verdict-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
               <div class="filter-status-content">
-                <h4 id="filter-status-title">Adversarial Defense Verdict</h4>
-                <p id="filter-status-desc">Evaluating attack robustness across models...</p>
+                <h4 id="filter-status-title">Algorithm 2 Verification Status</h4>
+                <p id="filter-status-desc">Evaluating sample across detection models...</p>
               </div>
             </div>
 
-            <!-- Live 3-Classifier Defense Duel Cards -->
-            <h3 class="section-title">Live Downstream Model Defense Duel</h3>
-            <p class="chart-subtitle">Testing whether each trained model detected this synthetic attack or was evaded (fooled into predicting normal traffic):</p>
+            <!-- Downstream Classifier Predictions Grid -->
+            <h3 class="section-title">Downstream Model Predictions on Synthesized Flow</h3>
+            <p class="chart-subtitle">Evaluating how each trained classifier categorizes the newly generated network flow:</p>
             
             <div class="adv-cards-grid">
-              <!-- Original Model Duel Card -->
+              <!-- Original Model Card -->
               <div class="adv-card" id="adv-card-orig">
                 <div class="adv-card-title">Original Model</div>
-                <div class="adv-card-sub">Unbalanced Baseline</div>
+                <div class="adv-card-sub">Imbalanced Baseline</div>
                 <div class="adv-pred-val" id="adv-orig-pred">--</div>
                 <div class="adv-pred-conf" id="adv-orig-conf">Confidence: --%</div>
                 <div class="adv-tag" id="adv-orig-tag">Evaluating...</div>
               </div>
 
-              <!-- SMOTE Model Duel Card -->
+              <!-- SMOTE Model Card -->
               <div class="adv-card" id="adv-card-smote">
                 <div class="adv-card-title">SMOTE Baseline</div>
                 <div class="adv-card-sub">Conventional Oversampling</div>
@@ -311,10 +300,10 @@
                 <div class="adv-tag" id="adv-smote-tag">Evaluating...</div>
               </div>
 
-              <!-- TMG-GAN Model Duel Card -->
+              <!-- TMG-GAN Model Card -->
               <div class="adv-card featured-adv" id="adv-card-tmg">
                 <div class="adv-card-title">Proposed TMG-GAN</div>
-                <div class="adv-card-sub">Our Augmentation Method</div>
+                <div class="adv-card-sub">Filtered Augmentation</div>
                 <div class="adv-pred-val" id="adv-tmg-pred">--</div>
                 <div class="adv-pred-conf" id="adv-tmg-conf">Confidence: --%</div>
                 <div class="adv-tag tag-success" id="adv-tmg-tag">Evaluating...</div>
@@ -322,7 +311,7 @@
             </div>
 
             <!-- Synthesized Features Telemetry Grid -->
-            <h3 class="section-title" style="margin-top: 22px;">Synthesized Physical Network Features</h3>
+            <h3 class="section-title" style="margin-top: 18px;">Synthesized Network Features (Sample of Prominent Dimensions)</h3>
             <div class="gen-features-grid" id="gen-features-grid">
               <!-- Populated by JS -->
             </div>
@@ -334,10 +323,10 @@
       <section class="tab-content" id="tab-benchmark">
         <div class="card full-width">
           <div class="card-header">
-            <h2>Comprehensive Performance Benchmark</h2>
+            <h2>Empirical Performance Benchmark</h2>
             <span class="chip">710,976 Untouched Test Flows</span>
           </div>
-          <p class="card-desc">Comparative evaluation across 3 independent random seeds on the held-out test distribution. Highlights how our proposed TMG-GAN balances rare attack recall against benign false-alarm rate compared to standard SMOTE.</p>
+          <p class="card-desc">Comparative evaluation across 3 independent random seeds on the held-out CICIDS2017 test set. Highlights trade-offs between minority attack recall and benign false alarm suppression.</p>
 
           <!-- Metrics Comparison Table -->
           <div class="table-responsive">
@@ -373,8 +362,8 @@
                   <td>97.68% &plusmn; 0.07%</td>
                 </tr>
                 <tr class="highlight-row-tmg">
-                  <td><strong>Proposed TMG-GAN (Our Approach)</strong></td>
-                  <td>Deep Multi-Generator + Filter (210k samples)</td>
+                  <td><strong>Proposed TMG-GAN</strong></td>
+                  <td>Multi-Generator + Rejection Filter (210k samples)</td>
                   <td><strong>0.7341 &plusmn; 0.0328</strong></td>
                   <td>0.9523 &plusmn; 0.0257</td>
                   <td><strong>0.7940 &plusmn; 0.0237</strong></td>
@@ -389,7 +378,7 @@
           <div class="benchmark-charts-grid">
             <div class="chart-card">
               <h3>Benign False Positive Rate (Lower is Better)</h3>
-              <p class="chart-subtitle">TMG-GAN reduces false alarms by -0.33% compared to SMOTE, avoiding legitimate flow misclassification.</p>
+              <p class="chart-subtitle">TMG-GAN reduces false alarms by -0.33% compared to SMOTE, avoiding normal flow misclassification.</p>
               <div class="img-container">
                 <img src="/api/plots/benign_fpr.png" alt="Benign False Positive Rate Comparison" class="responsive-plot">
               </div>
@@ -397,7 +386,7 @@
 
             <div class="chart-card">
               <h3>Per-Class Minority Recall Across Methods</h3>
-              <p class="chart-subtitle">Recall across Benign, DoS, PortScan, BruteForce, WebAttack, and Bot.</p>
+              <p class="chart-subtitle">Per-class recall across Benign, DoS, PortScan, BruteForce, WebAttack, and Bot.</p>
               <div class="img-container">
                 <img src="/api/plots/recall_by_class.png" alt="Per-Class Recall Comparison" class="responsive-plot">
               </div>
@@ -421,93 +410,17 @@
         </div>
       </section>
 
-      <!-- ================= TAB 4: PAPER ASSETS & LATEX ================= -->
-      <section class="tab-content" id="tab-paper">
-        <div class="card full-width">
-          <div class="card-header">
-            <h2>Project Report Tables & LaTeX Generator</h2>
-            <span class="chip">Ready for Paper & Viva Report</span>
-          </div>
-          <p class="card-desc">Click any "Copy LaTeX" button to instantly paste these publication-formatted tables directly into Overleaf or your project report.</p>
-
-          <div class="latex-sections-grid">
-            <!-- Table 1: Benchmark Comparison -->
-            <div class="latex-card">
-              <div class="latex-header">
-                <div>
-                  <h3>Table: Comparative Performance & False-Alarm Analysis</h3>
-                  <span class="latex-tag">Performance Summary & Benign FPR</span>
-                </div>
-                <button class="btn btn-copy" data-target="latex-code-table-vi">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  <span>Copy LaTeX</span>
-                </button>
-              </div>
-              <pre class="latex-code" id="latex-code-table-vi"><code>\begin{table}[t]
-\caption{Classification Performance on Untouched CICIDS2017 Test Set ($N = 710,976$ Flows)}
-\label{tab:evaluation_results}
-\centering
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{lcccc}
-\hline
-\textbf{Method} & \textbf{Macro Precision} & \textbf{Macro Recall} & \textbf{Macro F1} & \textbf{Benign FPR} \\
-\hline
-Baseline (Imbalanced) & 0.7125 $\pm$ 0.0201 & 0.9671 $\pm$ 0.0181 & 0.7813 $\pm$ 0.0117 & 2.47\% $\pm$ 0.07\% \\
-SMOTE (Conventional) & 0.6829 $\pm$ 0.0077 & \textbf{0.9919 $\pm$ 0.0002} & 0.7518 $\pm$ 0.0102 & 2.64\% $\pm$ 0.08\% \\
-\textbf{Proposed TMG-GAN} & \textbf{0.7341 $\pm$ 0.0328} & 0.9523 $\pm$ 0.0257 & \textbf{0.7940 $\pm$ 0.0237} & \textbf{2.31\% $\pm$ 0.22\%} \\
-\hline
-\end{tabular}%
-}
-\end{table}</code></pre>
-            </div>
-
-            <!-- Table 2: Dataset Subsampling -->
-            <div class="latex-card">
-              <div class="latex-header">
-                <div>
-                  <h3>Table: CICIDS2017 Class Distribution</h3>
-                  <span class="latex-tag">Dataset Balancing Protocol</span>
-                </div>
-                <button class="btn btn-copy" data-target="latex-code-table-ii">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  <span>Copy LaTeX</span>
-                </button>
-              </div>
-              <pre class="latex-code" id="latex-code-table-ii"><code>\begin{table}[t]
-\caption{CICIDS2017 Dataset Class Distribution and Oversampling Targets}
-\label{tab:dataset_distribution}
-\centering
-\begin{tabular}{lccc}
-\hline
-\textbf{Class} & \textbf{Training Set} & \textbf{Augmented (Oversampled)} & \textbf{Held-out Test Set} \\
-\hline
-Benign & 105,222 & 105,222 & 515,487 \\
-DoS & 21,550 & 34,609 & 105,584 \\
-PortScan & 10,809 & 23,868 & 52,968 \\
-BruteForce & 5,235 & 18,294 & 25,651 \\
-WebAttack & 1,476 & 14,535 & 7,227 \\
-Bot & 857 & 13,916 & 4,059 \\
-\hline
-\textbf{Total} & \textbf{145,149} & \textbf{210,444} & \textbf{710,976} \\
-\hline
-\end{tabular}
-\end{table}</code></pre>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </main>
 
-    <!-- Footer -->
+    <!-- Clean Academic Footer -->
     <footer class="app-footer">
       <div class="footer-content">
-        <span>GAN-Based Data Augmentation for Network Intrusion Detection | College Design Project</span>
-        <span>Environment: PyTorch CUDA &bull; 78 Features &bull; Untouched Test N=710,976</span>
+        <span>TMG-GAN: Generative Adversarial Network Data Augmentation for Network Intrusion Detection</span>
+        <span>Environment: PyTorch &bull; 78 Flow Telemetry Features &bull; Held-out Test Partition N = 710,976</span>
       </div>
     </footer>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2.1"></script>
 </body>
 </html>
