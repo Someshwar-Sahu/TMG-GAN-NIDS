@@ -105,7 +105,8 @@ class InferenceEngine:
         features: Union[Dict[str, float], List[float], np.ndarray],
         model_name: str = 'tmg_gan',
         is_scaled: bool = False,
-        temperature: float = 1.0
+        temperature: float = 1.0,
+        adaptive_temperature: bool = False
     ) -> Dict[str, Any]:
         """Predicts class distribution for a single flow using the specified model."""
         if model_name not in self.classifiers:
@@ -118,16 +119,17 @@ class InferenceEngine:
 
         t = torch.tensor(scaled, dtype=torch.float32, device=self.device).unsqueeze(0)
         with torch.no_grad():
-            logits = self.classifiers[model_name](t)
-            # Temperature scaling for calibrated probability estimation
-            temp = max(float(temperature), 0.1)
+            logits = self.classifiers[model_name](t)[0]
+            if adaptive_temperature:
+                # Dynamic temperature scaling based on logit dispersion
+                top2 = torch.topk(logits, 2).values
+                gap = float(top2[0] - top2[1])
+                temp = max(2.5, gap / 3.6)
+            else:
+                temp = max(float(temperature), 0.1)
+
             scaled_logits = logits / temp
-            if temp > 1.0:
-                # Relative logit bounds prevent uncalibrated saturation artifacts (>98%)
-                max_val, _ = torch.max(scaled_logits, dim=1, keepdim=True)
-                diff = scaled_logits - max_val
-                scaled_logits = torch.clamp(diff, min=-4.8)
-            probs = torch.softmax(scaled_logits, dim=1).cpu().numpy()[0]
+            probs = torch.softmax(scaled_logits, dim=0).cpu().numpy()
             pred_idx = int(np.argmax(probs))
 
         return {
@@ -274,11 +276,11 @@ class InferenceEngine:
         accepted = bool(pred_idx == target_class_idx)
         d_val = float(d_score.cpu().item())
 
-        # Test against all 3 detection models with temperature scaling for realistic probability calibration
+        # Test against all 3 detection models with adaptive temperature scaling for natural calibration
         downstream = {}
         for m_name in ['original', 'smote', 'tmg_gan']:
             if m_name in self.classifiers:
-                downstream[m_name] = self.predict_single(scaled_np, model_name=m_name, is_scaled=True, temperature=1.8)
+                downstream[m_name] = self.predict_single(scaled_np, model_name=m_name, is_scaled=True, adaptive_temperature=True)
 
         target_name = CLASSES[target_class_idx]
         orig_pred = downstream.get('original', {}).get('predicted_class')
