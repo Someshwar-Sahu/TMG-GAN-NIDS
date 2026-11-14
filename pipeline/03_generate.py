@@ -1,3 +1,4 @@
+import argparse
 import json
 import sys
 import time
@@ -28,10 +29,47 @@ TARGET_OS_COUNTS = {
 COLORS = ['#4C78A8', '#F58518', '#54A24B', '#E45756', '#B279A2', '#72B7B2']
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='TMG-GAN Generation and Quality Filtering')
+    parser.add_argument(
+        '--filter-mode',
+        type=str,
+        choices=['none', 'classifier', 'dual'],
+        default='dual',
+        help='Filtering mode: none (Arm A), classifier (Arm B), dual (Arm C - default)',
+    )
+    parser.add_argument(
+        '--conf-thresh',
+        type=float,
+        default=0.50,
+        help='Classifier confidence threshold (default: 0.50)',
+    )
+    parser.add_argument(
+        '--realism-thresh',
+        type=float,
+        default=0.0,
+        help='Critic realism threshold (default: 0.0)',
+    )
+    parser.add_argument(
+        '--output-prefix',
+        type=str,
+        default='gan',
+        help='Prefix for saved dataset files: e.g. gan, gan_arm_a, gan_arm_b (default: gan)',
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+
     print('=' * 75)
-    print('STEP 3: TMG-GAN Sample Generation and Filtering (Algorithm 2)')
+    print(f'STEP 3: TMG-GAN Sample Generation & Quality Filtering [Mode: {args.filter_mode.upper()}]')
     print('=' * 75)
+    print(f'Configuration:')
+    print(f'  Filter Mode    : {args.filter_mode}')
+    print(f'  Conf Threshold : {args.conf_thresh:.2f}')
+    print(f'  Realism Thresh : {args.realism_thresh:.2f}')
+    print(f'  Output Prefix  : {args.output_prefix}')
 
     config.print_gpu_status()
     device = config.DEVICE
@@ -53,10 +91,10 @@ def main():
 
     if not cd_path.exists() or not gen_path.exists():
         raise FileNotFoundError(
-            f'Trained model weights missing in {models_dir}. Complete Step 2 first.'
+            f'Trained model weights missing in {models_dir}. Train GAN first.'
         )
 
-    print(f'Loading CDModel from {cd_path}...')
+    print(f'\nLoading CDModel from {cd_path}...')
     cd = CDModel(in_features=78, label_num=6).to(device)
     cd.load_state_dict(torch.load(cd_path, map_location=device))
     cd.eval()
@@ -70,9 +108,9 @@ def main():
         g.eval()
         generators.append(g)
 
-    # 3. Algorithm 2 Generation & Filtering per Class
-    print('\nExecuting Algorithm 2 generation and noise filtering:')
-    print(f'{"Class":<12} {"Original":>10} {"Target OS":>10} {"Needed":>10} {"Raw Drawn":>12} {"Filter Acc %":>14}')
+    # 3. Generation & Filtering per Class
+    print('\nExecuting generation and quality filtering per class:')
+    print(f'{"Class":<12} {"Original":>10} {"Target OS":>10} {"Needed":>10} {"Raw Drawn":>12} {"Acceptance %":>14}')
     print('-' * 75)
 
     synthetic_samples_dict = {}
@@ -90,6 +128,7 @@ def main():
             synthetic_samples_dict[c] = None
             generation_stats.append({
                 'class': class_name,
+                'filter_mode': args.filter_mode,
                 'original': orig_count,
                 'target': target_count,
                 'needed': 0,
@@ -99,11 +138,11 @@ def main():
             })
             continue
 
-        # Algorithm 2 Loop
+        # Generation Loop
         accepted_tensors = []
         total_raw_drawn = 0
         batch_size = 1024
-        max_batches = 300  # Guard against infinite loops
+        max_batches = 300
         batches_run = 0
 
         with torch.no_grad():
@@ -112,13 +151,19 @@ def main():
                 candidates = generators[c].generate_samples(batch_size, device)
                 total_raw_drawn += len(candidates)
 
-                _, logits = cd(candidates)
-                preds = logits.argmax(dim=1)
+                if args.filter_mode == 'none':
+                    mask = torch.ones(len(candidates), dtype=torch.bool, device=device)
+                else:
+                    scores, logits = cd(candidates)
+                    probs = torch.softmax(logits, dim=1)
+                    if args.filter_mode == 'classifier':
+                        mask = (probs[:, c] >= args.conf_thresh)
+                    elif args.filter_mode == 'dual':
+                        mask = (probs[:, c] >= args.conf_thresh) & (scores.squeeze(-1) >= args.realism_thresh)
+                    else:
+                        raise ValueError(f'Unknown filter mode: {args.filter_mode}')
 
-                # Noise filter: keep sample only if classifier agrees with target generator label
-                mask = (preds == c)
                 valid = candidates[mask]
-
                 if len(valid) > 0:
                     accepted_tensors.append(valid.cpu())
 
@@ -138,6 +183,7 @@ def main():
 
         generation_stats.append({
             'class': class_name,
+            'filter_mode': args.filter_mode,
             'original': orig_count,
             'target': target_count,
             'needed': needed_count,
@@ -155,13 +201,11 @@ def main():
     all_y = []
 
     for c in range(config.LABEL_NUM):
-        # 1. Real original samples
         real_x = dataset.samples_by_class[c].cpu().numpy()
         real_y = np.full(len(real_x), c, dtype=np.int64)
         all_x.append(real_x)
         all_y.append(real_y)
 
-        # 2. Filtered synthetic samples
         if synthetic_samples_dict[c] is not None:
             syn_x = synthetic_samples_dict[c].numpy()
             syn_y = np.full(len(syn_x), c, dtype=np.int64)
@@ -185,56 +229,33 @@ def main():
     balanced_dir = PROJECT_ROOT / 'data' / 'balanced'
     balanced_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save gan_train.csv (78 features + Label name)
-    print(f'\nSaving gan_train.csv to {balanced_dir}...')
+    prefix = args.output_prefix
+    train_csv = balanced_dir / f'{prefix}_train.csv'
+    x_csv = balanced_dir / f'x_train_{prefix}.csv'
+    y_csv = balanced_dir / f'y_train_{prefix}.csv'
+
+    print(f'\nSaving augmented datasets with prefix "{prefix}" to {balanced_dir}...')
     df_augmented = pd.DataFrame(final_x, columns=feature_names)
     df_augmented['Label'] = [config.CLASSES[i] for i in final_y]
-    gan_train_csv = balanced_dir / 'gan_train.csv'
-    df_augmented.to_csv(gan_train_csv, index=False, float_format='%.6g')
-    print(f'Saved: {gan_train_csv} ({total_rows:,} rows, {df_augmented.shape[1]} columns)')
+    df_augmented.to_csv(train_csv, index=False, float_format='%.6g')
+    print(f'Saved: {train_csv} ({total_rows:,} rows)')
 
-    # Also save x_train_gan.csv and y_train_gan.csv for standard model training
-    x_gan_csv = balanced_dir / 'x_train_gan.csv'
-    y_gan_csv = balanced_dir / 'y_train_gan.csv'
-    pd.DataFrame(final_x, columns=feature_names).to_csv(x_gan_csv, index=False, float_format='%.6g')
+    pd.DataFrame(final_x, columns=feature_names).to_csv(x_csv, index=False, float_format='%.6g')
     y_onehot = np.eye(len(config.CLASSES), dtype=np.int8)[final_y]
-    pd.DataFrame(y_onehot, columns=config.CLASSES).to_csv(y_gan_csv, index=False)
-    print(f'Saved: {x_gan_csv}')
-    print(f'Saved: {y_gan_csv}')
+    pd.DataFrame(y_onehot, columns=config.CLASSES).to_csv(y_csv, index=False)
+    print(f'Saved: {x_csv}')
+    print(f'Saved: {y_csv}')
 
-    # 6. Save Summary and Plot
+    # 6. Save Summary Statistics
     plot_dir = PROJECT_ROOT / 'data' / 'plots'
     plot_dir.mkdir(parents=True, exist_ok=True)
     summary_df = pd.DataFrame(generation_stats)
-    summary_csv = plot_dir / 'tmg_gan_generation_summary.csv'
+    summary_csv = plot_dir / f'{prefix}_generation_summary.csv'
     summary_df.to_csv(summary_csv, index=False)
     print(f'Saved generation statistics: {summary_csv}')
 
-    # Plot Before vs After TMG-GAN Augmentation
-    before_counts = [len(dataset.samples_by_class[c]) for c in range(config.LABEL_NUM)]
-    after_counts = [TARGET_OS_COUNTS[config.CLASSES[c]] for c in range(config.LABEL_NUM)]
-
-    fig, axs = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
-    for ax, counts, title in (
-        (axs[0], before_counts, 'Before Augmentation (Training Set)'),
-        (axs[1], after_counts, 'After TMG-GAN Augmentation (Table II Target)'),
-    ):
-        bars = ax.bar(config.CLASSES, counts, color=COLORS)
-        ax.set_title(title, fontsize=12, fontweight='bold')
-        ax.set_yscale('log')
-        ax.tick_params(axis='x', rotation=20)
-        ax.spines[['top', 'right']].set_visible(False)
-        for b, v in zip(bars, counts):
-            ax.text(b.get_x() + b.get_width() / 2, v, f'{v:,}', ha='center', va='bottom', fontsize=9)
-    axs[0].set_ylabel('Sample Count (log scale)', fontsize=11)
-    plt.tight_layout()
-    plot_path = plot_dir / 'balance_tmg_gan.png'
-    plt.savefig(plot_path, dpi=200)
-    plt.close()
-    print(f'Saved comparison plot: {plot_path}')
-
     print('\n' + '=' * 75)
-    print('STEP 3 GENERATION & FILTERING COMPLETE')
+    print(f'STEP 3 GENERATION COMPLETE [Mode: {args.filter_mode}]')
     print('=' * 75)
 
 

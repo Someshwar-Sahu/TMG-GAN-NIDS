@@ -21,7 +21,7 @@ EPOCHS = 50
 BATCH_SIZE = 256
 LR = 1e-3
 SEEDS = [0, 1, 2]
-METHODS = ['original', 'smote', 'tmg_gan']
+METHODS = ['original', 'smote', 'adasyn', 'tmg_gan', 'tmg_gan_arm_a', 'tmg_gan_arm_b']
 
 
 def load_dataset_for_method(method: str):
@@ -34,10 +34,22 @@ def load_dataset_for_method(method: str):
         data_dir = PROJECT_ROOT / 'data' / 'balanced'
         x_path = data_dir / 'x_train_smote.csv'
         y_path = data_dir / 'y_train_smote.csv'
-    elif method == 'tmg_gan':
+    elif method == 'adasyn':
+        data_dir = PROJECT_ROOT / 'data' / 'balanced'
+        x_path = data_dir / 'x_train_adasyn.csv'
+        y_path = data_dir / 'y_train_adasyn.csv'
+    elif method == 'tmg_gan' or method == 'tmg_gan_arm_c':
         data_dir = PROJECT_ROOT / 'data' / 'balanced'
         x_path = data_dir / 'x_train_gan.csv'
         y_path = data_dir / 'y_train_gan.csv'
+    elif method == 'tmg_gan_arm_a':
+        data_dir = PROJECT_ROOT / 'data' / 'balanced'
+        x_path = data_dir / 'x_train_gan_arm_a.csv'
+        y_path = data_dir / 'y_train_gan_arm_a.csv'
+    elif method == 'tmg_gan_arm_b':
+        data_dir = PROJECT_ROOT / 'data' / 'balanced'
+        x_path = data_dir / 'x_train_gan_arm_b.csv'
+        y_path = data_dir / 'y_train_gan_arm_b.csv'
     else:
         raise ValueError(f'Unknown method: {method}')
 

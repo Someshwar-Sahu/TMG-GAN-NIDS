@@ -1,3 +1,4 @@
+import argparse
 import sys
 import time
 from pathlib import Path
@@ -16,7 +17,7 @@ from src import config
 from src.dnn import DNNClassifier
 
 CLASSES = config.CLASSES
-METHODS = ['original', 'smote', 'tmg_gan']
+ALL_METHODS = ['original', 'smote', 'adasyn', 'tmg_gan_arm_a', 'tmg_gan_arm_b', 'tmg_gan']
 SEEDS = [0, 1, 2]
 BATCH_SIZE = 1024
 
@@ -84,6 +85,10 @@ def evaluate_single_model(model_path: Path, X_test: torch.Tensor, y_test: np.nda
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Evaluate Models on Untouched Test Set')
+    parser.add_argument('--methods', nargs='+', default=None, help='Methods to evaluate')
+    args = parser.parse_args()
+
     print('=' * 75)
     print('STEP 5: Comprehensive Model Evaluation on Untouched CICIDS2017 Test Set')
     print('=' * 75)
@@ -95,15 +100,24 @@ def main():
     results_dir.mkdir(parents=True, exist_ok=True)
     models_dir = PROJECT_ROOT / 'models'
 
+    if args.methods:
+        eval_methods = args.methods
+    else:
+        eval_methods = [
+            m for m in ALL_METHODS
+            if all((models_dir / f'dnn_{m}_seed_{s}.pt').exists() for s in SEEDS)
+        ]
+    print(f'Methods selected for evaluation: {eval_methods}')
+
     X_test, y_test = load_test_data(device)
 
-    # 1. Run inference across all 9 models
+    # 1. Run inference across evaluated models
     per_class_records = []
-    model_results = {m: [] for m in METHODS}
-    cms_by_method = {m: np.zeros((6, 6), dtype=np.float64) for m in METHODS}
+    model_results = {m: [] for m in eval_methods}
+    cms_by_method = {m: np.zeros((6, 6), dtype=np.float64) for m in eval_methods}
 
     print('\nEvaluating models on 710,976 test flows:')
-    for method in METHODS:
+    for method in eval_methods:
         for seed in SEEDS:
             model_path = models_dir / f'dnn_{method}_seed_{seed}.pt'
             if not model_path.exists():
@@ -144,7 +158,7 @@ def main():
 
     # 3. Output: results/summary.csv (Mean and Std over seeds)
     summary_records = []
-    for method in METHODS:
+    for method in eval_methods:
         runs = model_results[method]
         accs = [r['accuracy'] for r in runs]
         precs = [r['macro_precision'] for r in runs]
@@ -177,44 +191,32 @@ def main():
         {
             'Method': 'DNN (Baseline)',
             'Source': 'Paper (Table VI)',
-            'Macro Precision': 0.9125,
-            'Macro Recall': 0.6501,
-            'Macro F1': 0.6900,
+            'Macro Precision': '0.9125',
+            'Macro Recall': '0.6501',
+            'Macro F1': '0.6900',
             'Benign FPR': 'Not Reported',
         },
         {
             'Method': 'TMG-IDS',
             'Source': 'Paper (Table VI)',
-            'Macro Precision': 0.9963,
-            'Macro Recall': 0.9981,
-            'Macro F1': 0.9972,
+            'Macro Precision': '0.9963',
+            'Macro Recall': '0.9981',
+            'Macro F1': '0.9972',
             'Benign FPR': 'Not Reported',
         },
-        {
-            'Method': 'DNN (Original)',
-            'Source': 'Ours (Mean +/- Std)',
-            'Macro Precision': f"{summary_df.loc[summary_df['method']=='original', 'macro_precision_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='original', 'macro_precision_std'].values[0]:.4f}",
-            'Macro Recall': f"{summary_df.loc[summary_df['method']=='original', 'macro_recall_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='original', 'macro_recall_std'].values[0]:.4f}",
-            'Macro F1': f"{summary_df.loc[summary_df['method']=='original', 'macro_f1_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='original', 'macro_f1_std'].values[0]:.4f}",
-            'Benign FPR': f"{summary_df.loc[summary_df['method']=='original', 'benign_fpr_mean'].values[0]:.4%} +/- {summary_df.loc[summary_df['method']=='original', 'benign_fpr_std'].values[0]:.4%}",
-        },
-        {
-            'Method': 'SMOTE (Matched Targets)',
-            'Source': 'Ours (Mean +/- Std)',
-            'Macro Precision': f"{summary_df.loc[summary_df['method']=='smote', 'macro_precision_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='smote', 'macro_precision_std'].values[0]:.4f}",
-            'Macro Recall': f"{summary_df.loc[summary_df['method']=='smote', 'macro_recall_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='smote', 'macro_recall_std'].values[0]:.4f}",
-            'Macro F1': f"{summary_df.loc[summary_df['method']=='smote', 'macro_f1_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='smote', 'macro_f1_std'].values[0]:.4f}",
-            'Benign FPR': f"{summary_df.loc[summary_df['method']=='smote', 'benign_fpr_mean'].values[0]:.4%} +/- {summary_df.loc[summary_df['method']=='smote', 'benign_fpr_std'].values[0]:.4%}",
-        },
-        {
-            'Method': 'TMG-GAN',
-            'Source': 'Ours (Mean +/- Std)',
-            'Macro Precision': f"{summary_df.loc[summary_df['method']=='tmg_gan', 'macro_precision_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='tmg_gan', 'macro_precision_std'].values[0]:.4f}",
-            'Macro Recall': f"{summary_df.loc[summary_df['method']=='tmg_gan', 'macro_recall_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='tmg_gan', 'macro_recall_std'].values[0]:.4f}",
-            'Macro F1': f"{summary_df.loc[summary_df['method']=='tmg_gan', 'macro_f1_mean'].values[0]:.4f} +/- {summary_df.loc[summary_df['method']=='tmg_gan', 'macro_f1_std'].values[0]:.4f}",
-            'Benign FPR': f"{summary_df.loc[summary_df['method']=='tmg_gan', 'benign_fpr_mean'].values[0]:.4%} +/- {summary_df.loc[summary_df['method']=='tmg_gan', 'benign_fpr_std'].values[0]:.4%}",
-        },
     ]
+    for m in eval_methods:
+        sub = summary_df[summary_df['method'] == m]
+        if len(sub) > 0:
+            paper_comparison.append({
+                'Method': m.upper(),
+                'Source': 'Ours (Mean +/- Std)',
+                'Macro Precision': f"{sub['macro_precision_mean'].values[0]:.4f} +/- {sub['macro_precision_std'].values[0]:.4f}",
+                'Macro Recall': f"{sub['macro_recall_mean'].values[0]:.4f} +/- {sub['macro_recall_std'].values[0]:.4f}",
+                'Macro F1': f"{sub['macro_f1_mean'].values[0]:.4f} +/- {sub['macro_f1_std'].values[0]:.4f}",
+                'Benign FPR': f"{sub['benign_fpr_mean'].values[0]:.4%} +/- {sub['benign_fpr_std'].values[0]:.4%}",
+            })
+
     paper_vs_ours_df = pd.DataFrame(paper_comparison)
     paper_vs_ours_path = results_dir / 'paper_vs_ours.csv'
     paper_vs_ours_df.to_csv(paper_vs_ours_path, index=False)
@@ -223,18 +225,24 @@ def main():
     # 5. Visualizations
     print('\nGenerating publication plots:')
 
+    label_map = {
+        'original': 'DNN (Original)',
+        'smote': 'SMOTE (Matched)',
+        'adasyn': 'ADASYN (Matched)',
+        'tmg_gan_arm_a': 'TMG-GAN (Arm A: None)',
+        'tmg_gan_arm_b': 'TMG-GAN (Arm B: Classifier)',
+        'tmg_gan': 'TMG-GAN (Arm C: Dual)',
+    }
+
     # Figure 1: Recall by Class (with Error Bars)
     plt.figure(figsize=(12, 6))
     recall_agg = per_class_df.groupby(['method', 'class'])['recall'].agg(['mean', 'std']).reset_index()
 
-    # Reorder methods and classes
-    method_order = ['original', 'smote', 'tmg_gan']
-    label_map = {'original': 'DNN (Original)', 'smote': 'SMOTE (Matched)', 'tmg_gan': 'TMG-GAN (Ours)'}
-
-    palette = {'original': '#4C78A8', 'smote': '#F58518', 'tmg_gan': '#54A24B'}
+    method_order = [m for m in ['original', 'smote', 'adasyn', 'tmg_gan'] if m in eval_methods]
+    palette = {'original': '#4C78A8', 'smote': '#F58518', 'adasyn': '#E45756', 'tmg_gan': '#54A24B'}
 
     sns.barplot(
-        data=per_class_df,
+        data=per_class_df[per_class_df['method'].isin(method_order)],
         x='class',
         y='recall',
         hue='method',
@@ -258,20 +266,21 @@ def main():
 
     # Figure 2: Benign False Positive Rate (FPR)
     fpr_records = []
-    for m in METHODS:
+    fpr_methods = [m for m in ['original', 'smote', 'adasyn', 'tmg_gan'] if m in eval_methods]
+    for m in fpr_methods:
         for r in model_results[m]:
             fpr_records.append({'Method': label_map[m], 'Benign FPR (%)': r['benign_fpr'] * 100})
     fpr_df = pd.DataFrame(fpr_records)
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(9, 5))
     sns.barplot(
         data=fpr_df,
         x='Method',
         y='Benign FPR (%)',
-        palette=['#4C78A8', '#F58518', '#54A24B'],
+        palette=['#4C78A8', '#F58518', '#E45756', '#54A24B'][:len(fpr_methods)],
         errorbar='sd',
         capsize=0.15,
-        width=0.5,
+        width=0.55,
     )
     plt.title('Benign Traffic False Positive Rate (FPR) on 621,677 Benign Test Flows', fontsize=12, fontweight='bold')
     plt.ylabel('False Positive Rate (%) [Lower is Better]', fontsize=11)
@@ -284,9 +293,10 @@ def main():
     print(f'  Saved: {fig2_path}')
 
     # Figure 3: Confusion Matrices per Method (Averaged over 3 seeds)
-    for method in METHODS:
+    for method in ['original', 'smote', 'adasyn', 'tmg_gan']:
+        if method not in eval_methods:
+            continue
         cm_norm = (cms_by_method[method] / 3.0)  # average over 3 runs
-        # Normalize by true row totals
         cm_row_norm = cm_norm / cm_norm.sum(axis=1, keepdims=True)
 
         plt.figure(figsize=(8, 6.5))

@@ -1,0 +1,7 @@
+stage,description,total_rows,detail
+1_raw_ingestion,Raw flows from 8 PCAP CSV files,2830743,8 CSV files concatenated
+2_nan_inf_removal,Dropped rows with NaN or Inf values,2827876,"Removed 2,867 invalid rows"
+3_duplicate_removal,Dropped exact duplicate flow records,2520798,"Removed 307,078 duplicate rows"
+4_class_filtering,"Retained 6 target classes (Benign, DoS, PortScan, BruteForce, WebAttack, Bot)",2392737,"Excluded 128,061 flows from out-of-scope attacks (DDoS, Infiltration, Heartbleed)"
+5_stratified_70_30_split,Stratified 70/30 Train/Test Split,2392737,"Train Pool: 1,674,916 flows (70%) | Untouched Test Set: 710,976 flows (30%)"
+6_training_subsampling,"Subsampling training pool to Table II counts (Ding et al., IEEE TIFS 2024)",145149,"Subsampled from 1.76M pool to 145,149 flows to match Table II class-imbalanced specifications"
