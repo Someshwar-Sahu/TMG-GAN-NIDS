@@ -48,13 +48,11 @@
 
 \author{
 \IEEEauthorblockN{Rishabh Gupta\IEEEauthorrefmark{1}, Uday Kharatmol\IEEEauthorrefmark{2}, Krishna Bhatt\IEEEauthorrefmark{3}, Someshwar Sahu\IEEEauthorrefmark{4}, Ameer Hamza Khan\IEEEauthorrefmark{5}, and Nagendra Yadav\IEEEauthorrefmark{6}}
-\IEEEauthorblockA{Department of Computer Science and Engineering\\
-Indian Institute of Information Technology Vadodara\\
-Gandhinagar, Gujarat, India\\
+\IEEEauthorblockA{Department of Computer Science and Engineering,
+Indian Institute of Information Technology Vadodara, India\\
 Email: \IEEEauthorrefmark{1}rishabh\_gupta@iiitvadodara.ac.in,
-\IEEEauthorrefmark{2}20261603031@iiitvadodara.ac.in,
-\IEEEauthorrefmark{3}20261603014@iiitvadodara.ac.in,\\
-\IEEEauthorrefmark{4}202451155@iiitvadodara.ac.in, \IEEEauthorrefmark{5}202451015@iiitvadodara.ac.in, \IEEEauthorrefmark{6}202451112@iiitvadodara.ac.in}
+\{\IEEEauthorrefmark{2}20261603031, \IEEEauthorrefmark{3}20261603014,
+\IEEEauthorrefmark{4}202451155, \IEEEauthorrefmark{5}202451015, \IEEEauthorrefmark{6}202451112\}@iiitvadodara.ac.in}
 }
 
 \maketitle
@@ -69,7 +67,7 @@ Network Intrusion Detection, Generative Adversarial Networks, Class Imbalance, F
 
 \section{Introduction}
 
-Modern enterprise infrastructure generates millions of network flows every second, making network intrusion detection an increasingly challenging task. Although deep neural networks (DNNs) achieve high nominal classification accuracy, real-world network environments often exhibit extreme class imbalance, where normal traffic significantly outweighs malicious activities~\cite{sharafaldin2018toward}. In production environments, approximately 90\%--99\% of network flows represent normal activities, while sophisticated attacks account for only a small fraction of overall traffic. When standard cross-entropy loss is optimized over such a skewed distribution, the learning process becomes heavily influenced by the majority benign class. Consequently, models tend to favor benign predictions, potentially achieving overall accuracy exceeding 98\% while maintaining unacceptably low recall for rare attack categories. Furthermore, in high-speed network environments operating at 10~Gbps, even a 0.2\% benign false-positive rate (FPR) can generate thousands of false alarms, increasing alert fatigue for security operations center (SOC) analysts~\cite{sommer2010outside}.
+Modern enterprise infrastructure generates millions of network flows every second, making network intrusion detection an increasingly challenging task. Although deep neural networks (DNNs) achieve high nominal classification accuracy, real-world network environments often exhibit extreme class imbalance, where normal traffic significantly outweighs malicious activities~\cite{sharafaldin2018toward}. In production environments, approximately 90\%--99\% of network flows represent normal activities, while sophisticated attacks account for only a small fraction of overall traffic. When standard cross-entropy loss is optimized over such a skewed distribution, the learning process becomes heavily influenced by the majority benign class. Consequently, models tend to favor benign predictions, potentially achieving overall accuracy exceeding 98\% while maintaining unacceptably low recall for rare attack categories. In high-speed network environments operating at 10~Gbps, even a 0.2\% benign false-positive rate (FPR) can generate thousands of false alarms, increasing alert fatigue for security operations center (SOC) analysts~\cite{sommer2010outside}.
 
 To address class imbalance, data-level oversampling techniques have been introduced, including Synthetic Minority Over-sampling Technique (SMOTE)~\cite{chawla2002smote} and Adaptive Synthetic Sampling (ADASYN)~\cite{he2008adasyn}. However, network traffic features follow complex, non-convex distributions with strong inter-feature dependencies. SMOTE and similar interpolation-based approaches generate synthetic samples by combining Euclidean-nearest neighbors, which may place artificial samples in overlapping feature regions, weakening class boundaries and inducing false alarms on benign flows.
 
@@ -80,7 +78,7 @@ To address multi-class gradient conflict, Ding et al.~\cite{ding2024tmggan} prop
 \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
     \item \textbf{Spatial Representation and Multi-Generator Modeling:} Flow features from CICIDS2017~\cite{sharafaldin2018toward} are reshaped into $13 \times 6$ spatial matrices, utilizing dedicated minority-class generators with spectral normalization~\cite{miyato2018spectral} as formulated in TMG-GAN~\cite{ding2024tmggan}.
     \item \textbf{Proposed Dual-Criterion Quality Filtering Gate:} A dual acceptance mechanism is proposed where candidate samples must satisfy both an auxiliary-classifier confidence threshold ($\tau_{\text{conf}} = 0.50$) and a discriminator realism threshold ($\tau_D = 0.0$), eliminating peripheral noise.
-    \item \textbf{Controlled Ablation and Benchmark Validation:} A 3-arm ablation study is conducted across three independent random seeds and 710,976 held-out test flows, quantifying attack recall and benign false-positive rate suppression against SMOTE~\cite{chawla2002smote} and ADASYN~\cite{he2008adasyn}.
+    \item \textbf{Controlled Ablation and Benchmark Validation:} A 3-arm ablation study is conducted across three independent random seeds and 710,976 held-out test flows, quantifying attack recall and benign false-positive rate suppression against an unaugmented baseline DNN~\cite{lecun2015deeplearning}, SMOTE~\cite{chawla2002smote}, and ADASYN~\cite{he2008adasyn}.
 \end{itemize}
 
 \subsection{Motivation}
@@ -378,7 +376,10 @@ The shared representation branches into two output heads:
 
 To balance realism and class fidelity, the generator loss is formulated as
 \begin{equation}
-\mathcal{L}_{G_k} = -\mathbb{E}_{\mathbf{z} \sim P_z}[D(G_k(\mathbf{z}))] + \lambda_1 \mathcal{L}_C(G_k(\mathbf{z}), k) + \lambda_2 \mathcal{L}_{\text{cos}}(G_k(\mathbf{z}), \bar{\mathbf{x}}_k)
+\begin{aligned}
+\mathcal{L}_{G_k} = &-\mathbb{E}_{\mathbf{z} \sim P_z}[D(G_k(\mathbf{z}))] + \lambda_1 \mathcal{L}_C(G_k(\mathbf{z}), k) \\
+&+ \lambda_2 \mathcal{L}_{\text{cos}}(G_k(\mathbf{z}), \bar{\mathbf{x}}_k)
+\end{aligned}
 \end{equation}
 where $\lambda_1, \lambda_2$ are loss weights, $\mathcal{L}_{\text{cos}}$ is cosine similarity, and $\bar{\mathbf{x}}_k$ is the empirical feature centroid of real training flows in class $k$.
 
@@ -398,24 +399,26 @@ Generating synthetic samples near peripheral regions of the attack space may int
 A candidate is retained only when both conditions are satisfied. Across all five minority generators, this filtering mechanism achieves an empirical joint acceptance rate of $98.10\%$, retaining 13,059 high-quality synthetic flows per class (65,295 synthetic flows total) to form a balanced training set of 210,444 flows. The complete procedure is formalized in Algorithm~\ref{alg:tmg_gan}.
 
 \begin{algorithm}[t]
-\caption{TMG-GAN with Proposed Dual Quality Filtering}
+\caption{TMG-GAN Training and Proposed Sample Quality Filtering}
 \label{alg:tmg_gan}
 \begin{algorithmic}[1]
-\REQUIRE Real training set $\mathcal{D}_{\text{train}}$, batch size $m$, weights $\lambda_1, \lambda_2$, thresholds $\tau_{\text{conf}}, \tau_D$, quota $N$
+\REQUIRE Training set $\mathcal{D}_{\text{train}}$, batch size $m$, weights $\lambda_1, \lambda_2$, thresholds $\tau_{\text{conf}} = 0.50, \tau_D = 0.0$, per-class quota $N = 13{,}059$
 \ENSURE Augmented training dataset $\mathcal{D}_{\text{aug}}$
+\STATE Initialize discriminator trunk $D$, classifier $C$, and generators $\{G_1, \dots, G_5\}$
 \FOR{each training epoch}
     \FOR{each minority class $k \in \{1, \dots, 5\}$}
-        \STATE Sample minibatch $\mathbf{x} \sim P_{r,k}$ and noise $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}_{128})$
-        \STATE Update shared trunk and heads via $\mathcal{L}_D$ and $\mathcal{L}_C$
-        \STATE Update generator $G_k$ via $\mathcal{L}_{G_k}$ with spectral normalization
+        \STATE Sample batch $\mathbf{x} \sim P_{r,k}$ and noise $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}_{128})$
+        \STATE Reshape to $\mathbf{X}_{\text{2D}} \in \mathbb{R}^{13 \times 6 \times 1}$
+        \STATE Update shared trunk and heads via $\mathcal{L}_D$ and $\mathcal{L}_C$ with spectral norm
+        \STATE Update generator $G_k$ via adversarial, classification, and centroid loss $\mathcal{L}_{G_k}$
     \ENDFOR
 \ENDFOR
 \STATE $\mathcal{D}_{\text{aug}} \leftarrow \mathcal{D}_{\text{train}}$
 \FOR{each minority class $k \in \{1, \dots, 5\}$}
     \STATE $\mathcal{S}_k \leftarrow \emptyset$
     \WHILE{$|\mathcal{S}_k| < N$}
-        \STATE Sample $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}_{128})$ and generate $\hat{\mathbf{x}} = G_k(\mathbf{z})$
-        \IF{$C(\hat{\mathbf{x}})_k \geq \tau_{\text{conf}}$ \AND $D(\hat{\mathbf{x}}) \geq \tau_D$}
+        \STATE Sample $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}_{128})$ and synthesize candidate $\hat{\mathbf{x}} = G_k(\mathbf{z})$
+        \IF{$C(\hat{\mathbf{x}})_k \geq \tau_{\text{conf}}$ \AND $D(\hat{\mathbf{x}}) \geq \tau_D$} \COMMENT{\textbf{Proposed Dual Gate}}
             \STATE $\mathcal{S}_k \leftarrow \mathcal{S}_k \cup \{(\hat{\mathbf{x}}, k)\}$
         \ENDIF
     \ENDWHILE
@@ -442,7 +445,7 @@ As shown in Table~\ref{tab:dataset_distribution}, benign traffic comprises 105,2
 
 \begin{table}[t]
 \centering
-\caption{Class Distribution in Preprocessed CICIDS2017 Dataset}
+\caption{Class Distribution in Preprocessed CICIDS2017 Dataset~\cite{sharafaldin2018toward}}
 \label{tab:dataset_distribution}
 \begin{tabular}{lrrrr}
 \toprule
@@ -460,7 +463,7 @@ Bot         &     857 &  0.59\% &   1,107 &  0.16\% \\
 \end{tabular}
 \end{table}
 
-The downstream classifier contains three fully connected layers ($78 \to 256 \to 128 \to 6$) with LeakyReLU activations ($\alpha = 0.2$), batch normalization, and dropout ($p = 0.20$). Each model is trained for 50 epochs using the Adam optimizer ($lr = 1 \times 10^{-3}$, cosine annealing schedule, batch size 256). All experiments are repeated across three independent random seeds ($0, 1, 2$).
+The downstream classifier is a standard feedforward deep neural network (DNN)~\cite{lecun2015deeplearning} containing three fully connected layers ($78 \to 256 \to 128 \to 6$) with LeakyReLU activations ($\alpha = 0.2$), batch normalization, and dropout ($p = 0.20$). When trained directly on the 145,149 imbalanced training flows without synthetic data augmentation, it serves as the control benchmark (\textbf{DNN Baseline}). Each model is trained for 50 epochs using the Adam optimizer ($lr = 1 \times 10^{-3}$, cosine annealing schedule, batch size 256). All experiments are repeated across three independent random seeds ($0, 1, 2$).
 
 \subsection{Results}
 
@@ -477,16 +480,16 @@ The aggregate classification results are summarized in Table~\ref{tab:evaluation
 \toprule
 \textbf{Configuration} & \textbf{Macro Prec. (\%)} & \textbf{Macro Rec. (\%)} & \textbf{Macro F1} & \textbf{Benign FPR (\%)} \\
 \midrule
-DNN (Original)                             & $71.25 \pm 2.01$ & $96.71 \pm 1.81$ & $0.7813 \pm 0.0117$ & $2.4716 \pm 0.0664$ \\
-DNN + SMOTE~\cite{chawla2002smote}         & $68.29 \pm 0.77$ & $99.19 \pm 0.02$ & $0.7518 \pm 0.0102$ & $2.6366 \pm 0.0798$ \\
-DNN + ADASYN~\cite{he2008adasyn}           & $67.11 \pm 1.25$ & $\mathbf{99.36 \pm 0.03}$ & $0.7390 \pm 0.0148$ & $2.9324 \pm 0.1141$ \\
-\textbf{DNN + TMG-GAN (Proposed Filtering)} & $\mathbf{73.41 \pm 3.28}$ & $95.23 \pm 2.57$ & $\mathbf{0.7940 \pm 0.0237}$ & $\mathbf{2.3088 \pm 0.2161}$ \\
+DNN Baseline                                    & $71.25 \pm 2.01$ & $96.71 \pm 1.81$ & $0.7813 \pm 0.0117$ & $2.4716 \pm 0.0664$ \\
+DNN + SMOTE~\cite{chawla2002smote}              & $68.29 \pm 0.77$ & $99.19 \pm 0.02$ & $0.7518 \pm 0.0102$ & $2.6366 \pm 0.0798$ \\
+DNN + ADASYN~\cite{he2008adasyn}                & $67.11 \pm 1.25$ & $\mathbf{99.36 \pm 0.03}$ & $0.7390 \pm 0.0148$ & $2.9324 \pm 0.1141$ \\
+\textbf{DNN + TMG-GAN (Proposed Filtering)}     & $\mathbf{73.41 \pm 3.28}$ & $95.23 \pm 2.57$ & $\mathbf{0.7940 \pm 0.0237}$ & $\mathbf{2.3088 \pm 0.2161}$ \\
 \bottomrule
 \end{tabular}%
 }
 \end{table*}
 
-Table~\ref{tab:evaluation_results} reports aggregate metrics across the 710,976 held-out test flows. DNN (Without Augmentation) achieves a macro F1-score of $0.7813 \pm 0.0117$. While SMOTE~\cite{chawla2002smote} and ADASYN~\cite{he2008adasyn} improve macro recall ($99.19\%$ and $99.36\%$), both interpolation techniques significantly degrade macro precision ($68.29\%$ and $67.11\%$) and reduce the overall macro F1-score ($0.7518$ and $0.7390$). In contrast, \textbf{DNN + TMG-GAN (Proposed Filtering)} achieves the highest macro F1-score of $\mathbf{0.7940 \pm 0.0237}$ and highest macro precision of $\mathbf{73.41\% \pm 3.28\%}$.
+Table~\ref{tab:evaluation_results} reports aggregate metrics across the 710,976 held-out test flows. The DNN Baseline achieves a macro F1-score of $0.7813 \pm 0.0117$. While SMOTE~\cite{chawla2002smote} and ADASYN~\cite{he2008adasyn} improve macro recall ($99.19\%$ and $99.36\%$), both interpolation techniques degrade macro precision ($68.29\%$ and $67.11\%$) and reduce the overall macro F1-score ($0.7518$ and $0.7390$). In contrast, \textbf{DNN + TMG-GAN (Proposed Filtering)} achieves the highest macro F1-score of $\mathbf{0.7940 \pm 0.0237}$ and highest macro precision of $\mathbf{73.41\% \pm 3.28\%}$.
 
 The benign false-positive rates are compared in Fig.~\ref{fig:benign_fpr}.
 
@@ -508,7 +511,7 @@ The benign false-positive rates are compared in Fig.~\ref{fig:benign_fpr}.
     axis on top=false,
     enlarge x limits=0.20,
     xtick={0, 1, 2, 3},
-    xticklabels={DNN (Orig.), SMOTE, ADASYN, TMG-GAN},
+    xticklabels={DNN Baseline, SMOTE, ADASYN, Proposed},
     xticklabel style={font=\scriptsize\bfseries},
     yticklabel style={font=\scriptsize},
     xlabel={Training Method},
@@ -574,9 +577,9 @@ As illustrated in Fig.~\ref{fig:benign_fpr}, the operational impact on benign fa
 
 To evaluate the contribution of the quality filtering mechanism, an ablation study was conducted across three generation arms:
 \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-    \item \textbf{Arm A (Unfiltered Generator):} Raw generator candidates without post-generation quality filtering.
+    \item \textbf{Arm A (TMG-GAN Base~\cite{ding2024tmggan}):} Raw generator candidates without post-generation quality filtering.
     \item \textbf{Arm B (Classifier Gate Only):} Retains candidates that satisfy the auxiliary classifier criterion $C(\hat{\mathbf{x}})_k \geq 0.50$.
-    \item \textbf{Arm C (Proposed Dual Gate):} Retains candidates that satisfy both classifier confidence ($C(\hat{\mathbf{x}})_k \geq 0.50$) and discriminator realism ($D(\hat{\mathbf{x}}) \geq 0.0$).
+    \item \textbf{Arm C (\textbf{Proposed Dual Gate}):} Retains candidates that satisfy both classifier confidence ($C(\hat{\mathbf{x}})_k \geq 0.50$) and discriminator realism ($D(\hat{\mathbf{x}}) \geq 0.0$).
 \end{itemize}
 
 The ablation results on the 710,976 held-out test flows are presented in Table~\ref{tab:ablation}.
@@ -590,15 +593,15 @@ The ablation results on the 710,976 held-out test flows are presented in Table~\
 \toprule
 \textbf{Ablation Arm} & \textbf{Filter Criterion} & \textbf{Accept. (\%)} & \textbf{Macro Prec. (\%)} & \textbf{Macro Rec. (\%)} & \textbf{Macro F1} & \textbf{Benign FPR (\%)} \\
 \midrule
-Arm A (None)                     & Unfiltered ($G_k$ raw)            & 100.00\% & $73.70 \pm 3.53$ & $95.75 \pm 2.20$ & $0.7975 \pm 0.0278$ & $2.3000 \pm 0.2054$ \\
-Arm B (Classifier Only)          & $C(\hat{\mathbf{x}})_k \ge 0.50$   &  98.10\% & $73.81 \pm 3.75$ & $95.58 \pm 2.34$ & $0.7978 \pm 0.0287$ & $2.3058 \pm 0.2168$ \\
-Arm C (\textbf{Proposed Dual Gate}) & $C_k \ge 0.50 \land D \ge 0.0$ &  98.10\% & $73.41 \pm 3.28$ & $95.23 \pm 2.57$ & $0.7940 \pm 0.0237$ & $2.3088 \pm 0.2161$ \\
+Arm A (TMG-GAN Base~\cite{ding2024tmggan})   & Unfiltered ($G_k$ raw)            & 100.00\% & $73.70 \pm 3.53$ & $95.75 \pm 2.20$ & $0.7975 \pm 0.0278$ & $2.3000 \pm 0.2054$ \\
+Arm B (Classifier Gate Only)                 & $C(\hat{\mathbf{x}})_k \ge 0.50$   &  98.10\% & $73.81 \pm 3.75$ & $95.58 \pm 2.34$ & $0.7978 \pm 0.0287$ & $2.3058 \pm 0.2168$ \\
+Arm C (\textbf{Proposed Dual Gate})          & $C_k \ge 0.50 \land D \ge 0.0$     &  98.10\% & $73.41 \pm 3.28$ & $95.23 \pm 2.57$ & $0.7940 \pm 0.0237$ & $2.3088 \pm 0.2161$ \\
 \bottomrule
 \end{tabular}%
 }
 \end{table*}
 
-All three TMG-GAN variants achieve comparable downstream macro F1-scores ($0.7940$--$0.7978$) and benign false-positive rates ($\approx 2.30\%$--$2.31\%$), decisively outperforming SMOTE ($0.7518$) and ADASYN ($0.7390$). The dual-criterion gate in Arm C filters out approximately $1.90\%$ of borderline candidates, functioning effectively as an automated quality filter without compromising downstream attack recall.
+All three TMG-GAN variants achieve comparable downstream macro F1-scores ($0.7940$--$0.7978$) and benign false-positive rates ($\approx 2.30\%$--$2.31\%$), outperforming SMOTE ($0.7518$) and ADASYN ($0.7390$). The dual-criterion gate in Arm C filters out approximately $1.90\%$ of borderline candidates, functioning effectively as an automated quality filter without compromising downstream attack recall.
 
 \subsubsection{Per-Class Granular Breakdown}
 
@@ -609,10 +612,10 @@ The detailed classification metrics for each traffic class are reported in Table
 \caption{Per-Class Classification Metrics on 710,976 Held-Out Test Flows (Mean across 3 Seeds)}
 \label{tab:per_class_results}
 \footnotesize
-\setlength{\tabcolsep}{3.8pt}
+\setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{llcccc}
 \toprule
-\textbf{Class} & \textbf{Metric} & \textbf{Original} & \textbf{SMOTE} & \textbf{ADASYN} & \textbf{Proposed} \\
+\textbf{Class} & \textbf{Metric} & \textbf{DNN Baseline} & \textbf{SMOTE~\cite{chawla2002smote}} & \textbf{ADASYN~\cite{he2008adasyn}} & \textbf{Proposed} \\
 \midrule
 \multirow{3}{*}{Benign}     & Precision (\%) & 99.97 & 99.99 & 99.99 & 99.96 \\
                             & Recall (\%)    & 97.53 & 97.36 & 97.07 & \textbf{97.69} \\
@@ -699,7 +702,7 @@ The per-class recall values are compared in Fig.~\ref{fig:recall_by_class}.
     (WebAttack, 0.9647) +- (0, 0.0045)
     (Bot, 0.8687) +- (0, 0.1359)
 };
-\addlegendentry{DNN (Orig.)}
+\addlegendentry{DNN Baseline}
 
 \addplot[
     fill=smoteorange,
@@ -718,7 +721,7 @@ The per-class recall values are compared in Fig.~\ref{fig:recall_by_class}.
     (WebAttack, 0.9964) +- (0, 0.0024)
     (Bot, 0.9857) +- (0, 0.0026)
 };
-\addlegendentry{SMOTE}
+\addlegendentry{SMOTE~\cite{chawla2002smote}}
 
 \addplot[
     fill=adasynpurple,
@@ -737,7 +740,7 @@ The per-class recall values are compared in Fig.~\ref{fig:recall_by_class}.
     (WebAttack, 0.9995) +- (0, 0.0008)
     (Bot, 0.9932) +- (0, 0.0017)
 };
-\addlegendentry{ADASYN}
+\addlegendentry{ADASYN~\cite{he2008adasyn}}
 
 \addplot[
     fill=tmggreen,
@@ -756,7 +759,7 @@ The per-class recall values are compared in Fig.~\ref{fig:recall_by_class}.
     (WebAttack, 0.9746) +- (0, 0.0134)
     (Bot, 0.7700) +- (0, 0.1770)
 };
-\addlegendentry{TMG-GAN}
+\addlegendentry{Proposed}
 \end{axis}
 \end{tikzpicture}
 \caption{Per-class recall comparison across the four evaluated DNN training configurations on $710{,}976$ held-out test flows.}
@@ -765,7 +768,7 @@ The per-class recall values are compared in Fig.~\ref{fig:recall_by_class}.
 
 Table~\ref{tab:per_class_results} presents detailed per-class results across all six categories:
 \begin{itemize}\setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-    \item \textbf{Botnet Detection:} For the rarest class (Bot, 857 training flows), SMOTE achieves $98.57\%$ recall and ADASYN achieves $99.32\%$ recall, but their precisions drop severely to $23.81\%$ and $13.39\%$. DNN + TMG-GAN (Proposed Filtering) maintains a precision of $\mathbf{48.27\%}$ with an F1-score of $\mathbf{0.5641}$.
+    \item \textbf{Botnet Detection:} For the rarest class (Bot, 857 training flows), SMOTE achieves $98.57\%$ recall and ADASYN achieves $99.32\%$ recall, but their precisions drop to $23.81\%$ and $13.39\%$. DNN + TMG-GAN (Proposed Filtering) maintains a precision of $\mathbf{48.27\%}$ with an F1-score of $\mathbf{0.5641}$.
     \item \textbf{Web Attacks:} On WebAttack, the proposed filtering improves precision over SMOTE ($25.53\%$ versus $20.24\%$) with an F1-score of $0.4016$ versus $0.3364$.
     \item \textbf{Benign Stability:} On benign flows, the proposed framework achieves the highest recall ($97.69\%$), preventing false misclassifications on normal network traffic.
 \end{itemize}
@@ -816,7 +819,7 @@ The normalized confusion matrix for the proposed downstream classifier is shown 
 \label{fig:confusion}
 \end{figure}
 
-Fig.~\ref{fig:confusion} displays the normalized confusion matrix for DNN + TMG-GAN (Proposed Filtering), showing diagonal accuracies of $97.7\%$ on Benign flows, $99.9\%$ on DoS, $99.9\%$ on PortScan, $99.5\%$ on BruteForce, $97.5\%$ on WebAttack, and $77.0\%$ on Bot flows. Crucially, benign misclassification is suppressed, maintaining stable classification boundaries.
+Fig.~\ref{fig:confusion} displays the normalized confusion matrix for DNN + TMG-GAN (Proposed Filtering), showing diagonal accuracies of $97.7\%$ on Benign flows, $99.9\%$ on DoS, $99.9\%$ on PortScan, $99.5\%$ on BruteForce, $97.5\%$ on WebAttack, and $77.0\%$ on Bot flows. Benign misclassification is suppressed, maintaining stable classification boundaries.
 
 The distribution of real and synthetic attack flows in the latent feature space is visualized in Fig.~\ref{fig:tsne}.
 
