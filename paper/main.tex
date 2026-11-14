@@ -51,8 +51,8 @@
 \IEEEauthorblockA{Department of Computer Science and Engineering,
 Indian Institute of Information Technology Vadodara, India\\
 Email: \IEEEauthorrefmark{1}rishabh\_gupta@iiitvadodara.ac.in,
-\{\IEEEauthorrefmark{2}20261603031, \IEEEauthorrefmark{3}20261603014,
-\IEEEauthorrefmark{4}202451155, \IEEEauthorrefmark{5}202451015, \IEEEauthorrefmark{6}202451112\}@iiitvadodara.ac.in}
+\{\IEEEauthorrefmark{2}20261603031, \IEEEauthorrefmark{3}20261603014, \IEEEauthorrefmark{4}202451155,\\
+\IEEEauthorrefmark{5}202451015, \IEEEauthorrefmark{6}202451112\}@iiitvadodara.ac.in}
 }
 
 \maketitle
@@ -418,8 +418,8 @@ A candidate is retained only when both conditions are satisfied. Across all five
     \STATE $\mathcal{S}_k \leftarrow \emptyset$
     \WHILE{$|\mathcal{S}_k| < N$}
         \STATE Sample $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, \mathbf{I}_{128})$ and synthesize candidate $\hat{\mathbf{x}} = G_k(\mathbf{z})$
-        \IF{$C(\hat{\mathbf{x}})_k \geq \tau_{\text{conf}}$ \AND $D(\hat{\mathbf{x}}) \geq \tau_D$} \COMMENT{\textbf{Proposed Dual Gate}}
-            \STATE $\mathcal{S}_k \leftarrow \mathcal{S}_k \cup \{(\hat{\mathbf{x}}, k)\}$
+        \IF{$C(\hat{\mathbf{x}})_k \geq \tau_{\text{conf}} \land D(\hat{\mathbf{x}}) \geq \tau_D$}
+            \STATE $\mathcal{S}_k \leftarrow \mathcal{S}_k \cup \{(\hat{\mathbf{x}}, k)\}$ \COMMENT{Proposed Gate Acceptance}
         \ENDIF
     \ENDWHILE
     \STATE $\mathcal{D}_{\text{aug}} \leftarrow \mathcal{D}_{\text{aug}} \cup \mathcal{S}_k$
@@ -567,11 +567,7 @@ The benign false-positive rates are compared in Fig.~\ref{fig:benign_fpr}.
 \label{fig:benign_fpr}
 \end{figure}
 
-As illustrated in Fig.~\ref{fig:benign_fpr}, the operational impact on benign false-positive rate is substantial:
-\begin{itemize}\setlength{\itemsep}{2pt}\setlength{\topsep}{2pt}\setlength{\parsep}{0pt}
-    \item \textbf{Boundary Inflation:} SMOTE increases benign FPR to $2.6366\%$ (an additional 1,026 false alarms on 621,677 benign flows), while ADASYN elevates benign FPR to $2.9324\%$ (an extra 2,865 false alarms).
-    \item \textbf{Proposed Gate Suppression:} DNN + TMG-GAN (Proposed Filtering) reduces benign FPR to $\mathbf{2.3088\% \pm 0.2161\%}$ (14,353 false alarms), eliminating 2,038 false alarms compared to SMOTE and 3,877 compared to ADASYN.
-\end{itemize}
+As illustrated in Fig.~\ref{fig:benign_fpr}, the operational impact on benign false-positive rate is substantial. While SMOTE and ADASYN elevate benign FPR to $2.6366\%$ and $2.9324\%$ (producing 1,026 and 2,865 additional false alarms on the 621,677 benign test flows), DNN + TMG-GAN (Proposed Filtering) reduces benign FPR to $\mathbf{2.3088\% \pm 0.2161\%}$ (14,353 false alarms), eliminating 2,038 false alarms relative to SMOTE and 3,877 relative to ADASYN.
 
 \subsubsection{Sample Quality Filtering Ablation Study}
 
@@ -611,8 +607,7 @@ The detailed classification metrics for each traffic class are reported in Table
 \centering
 \caption{Per-Class Classification Metrics on 710,976 Held-Out Test Flows (Mean across 3 Seeds)}
 \label{tab:per_class_results}
-\footnotesize
-\setlength{\tabcolsep}{3.2pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llcccc}
 \toprule
 \textbf{Class} & \textbf{Metric} & \textbf{DNN Baseline} & \textbf{SMOTE~\cite{chawla2002smote}} & \textbf{ADASYN~\cite{he2008adasyn}} & \textbf{Proposed} \\
@@ -641,7 +636,8 @@ The detailed classification metrics for each traffic class are reported in Table
                             & Recall (\%)    & 86.87 & 98.57 & \textbf{99.32} & 76.99 \\
                             & F1-Score       & 0.5548 & 0.3811 & 0.2359 & \textbf{0.5641} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 The per-class recall values are compared in Fig.~\ref{fig:recall_by_class}.
